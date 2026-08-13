@@ -40,8 +40,11 @@ A single resource is wrapped as a one-entry Bundle automatically.
 |-----|----------|
 | [User guide](docs/USER_GUIDE.md) | Clinicians / FHIR developers using the UI |
 | [Technical manual](docs/TECHNICAL_MANUAL.md) | Maintainers: architecture, WASM, vendoring |
+| [Deploy (cds1 / Caddy)](docs/DEPLOY.md) | Host under `/browse` with `deploy-cds1.sh` |
 | [AGENTS.md](AGENTS.md) | LLM agents + humans: bump tjson / change UI |
 | [Connectathon draft](docs/CONNECTATHON.md) | September demo script + session proposal (draft) |
+
+**Hosted demo (cds1):** https://cds1.vistaplex.org/browse/?example=1 — see [docs/DEPLOY.md](docs/DEPLOY.md).
 
 ## License
 

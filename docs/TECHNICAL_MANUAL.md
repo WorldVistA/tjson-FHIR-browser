@@ -66,7 +66,7 @@ URL load is browser `fetch`. Failures are shown in the load panel. Workarounds (
 
 ## Deploy (GitHub Pages)
 
-Workflow `.github/workflows/pages.yml` uploads a static artifact containing `web/`, `vendor/`, `examples/`, and copies of root docs so relative links work. Site root is the artifact root; app URL is `/web/` (or `/` if the workflow also copies `web/*` to root — see workflow comments).
+Workflow `.github/workflows/pages.yml` uploads a static artifact containing `web/`, `vendor/`, `examples/`, and copies of root docs so relative links work. Site root is the artifact root (app at `/`).
 
 Local:
 
@@ -76,6 +76,10 @@ Local:
 ```
 
 Repo root must be the HTTP root so `../vendor` and `../examples` resolve from `web/`.
+
+## Deploy (cds1 / Caddy `/browse`)
+
+Use `./scripts/deploy-cds1.sh` to assemble the same site-root tree, rsync to the host, and wire Caddy `handle_path /browse/*`. Full steps, nginx alternative, and troubleshooting: **[DEPLOY.md](DEPLOY.md)**.
 
 ## Relation to Codex
 

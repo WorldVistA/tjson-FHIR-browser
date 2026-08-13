@@ -50,6 +50,17 @@ Optional: `examples/*`, docs under `docs/`, `README.md`.
 3. TJSON and JSON toggles both render
 4. Load error path still shows CORS / parse failures clearly
 
+## Job 3 — Deploy to cds1 `/browse`
+
+Only when a human asks to deploy.
+
+```bash
+./scripts/smoke-browser.sh
+./scripts/deploy-cds1.sh
+```
+
+**Verify:** script prints `DEPLOY OK` and `https://cds1.vistaplex.org/browse/` returns 200. Details: [docs/DEPLOY.md](docs/DEPLOY.md). Do not hand-edit `/opt/tjson-FHIR-browser/site` on the server.
+
 ## Layout map
 
 | Path | Owner |
@@ -57,6 +68,7 @@ Optional: `examples/*`, docs under `docs/`, `README.md`.
 | `web/*` | UI agents |
 | `vendor/tjson/` | update script only |
 | `scripts/update-vendored-tjson.sh` | maintain carefully |
+| `scripts/deploy-cds1.sh` | cds1 / similar Caddy hosts |
 | `scripts/smoke-browser.sh` | extend when adding UI contracts |
 | `docs/*`, `AGENTS.md` | keep in sync with behavior |
 
