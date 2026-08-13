@@ -1,0 +1,6 @@
+.DS_Store
+*.log
+_site/
+node_modules/
+*.tgz
+.npm/

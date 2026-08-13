@@ -1,0 +1,62 @@
+# Deploy static tjson FHIR Browser to GitHub Pages.
+# Artifact layout: web/ at site root so / and /index.html work;
+# vendor/ and examples/ sit beside web assets for relative imports.
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Assemble site
+        run: |
+          set -euo pipefail
+          mkdir -p _site
+          # App at site root (Pages URL = /)
+          cp -a web/. _site/
+          # Keep vendor/ and examples/ as siblings of app entry so
+          # ../vendor and ../examples from /web/ paths also work if needed.
+          # With app at root, app.js imports ../vendor → fix to ./vendor:
+          mkdir -p _site/vendor _site/examples _site/docs
+          cp -a vendor/. _site/vendor/
+          cp -a examples/. _site/examples/
+          cp -a docs/. _site/docs/
+          cp README.md LICENSE AGENTS.md _site/ 2>/dev/null || true
+          # Rewrite module path for root deploy: ../vendor → ./vendor, ../examples → ./examples
+          sed -i 's|../vendor/tjson/|./vendor/tjson/|g' _site/app.js
+          sed -i 's|../examples/|./examples/|g' _site/app.js
+          sed -i 's|href="../docs/|href="./docs/|g' _site/index.html
+          sed -i 's|href="../README.md"|href="./README.md"|g' _site/index.html
+          # Smoke-ish: required files present
+          test -f _site/index.html
+          test -f _site/vendor/tjson/web/index.js
+          test -f _site/examples/sample-bundle.json
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
