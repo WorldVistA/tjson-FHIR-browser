@@ -2,7 +2,7 @@
 
 ## What you see
 
-- **Load panel** (top): URL, file upload, paste, and “Load example”.
+- **Header**: title, theme toggle, and a **folder+** icon that opens/closes the Load Bundle dialog (URL, file, paste, example). After a successful load the dialog closes so the list and detail panes fill the window. Errors reopen it.
 - **Left**: list of resources in the Bundle. Search box + type filter.
 - **Right**: selected resource as **TJSON** (default) or **JSON**.
 

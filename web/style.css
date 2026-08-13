@@ -50,17 +50,26 @@ body.theme-light {
   --error: #b91c1c;
 }
 
+html,
+body {
+  height: 100%;
+}
+
 body {
   margin: 0;
   font-family: Arial, sans-serif;
   background: var(--bg);
   color: var(--fg);
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
 }
 
 .top {
-  padding: 12px 16px;
+  padding: 10px 16px;
   border-bottom: 1px solid var(--top-border);
   background: var(--top-bg);
+  flex: 0 0 auto;
 }
 
 .topline {
@@ -68,6 +77,36 @@ body {
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+}
+
+.topline-spacer {
+  flex: 1 1 auto;
+  min-width: 8px;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--btn-border);
+  border-radius: 8px;
+  background: var(--btn-bg);
+  color: var(--fg);
+  cursor: pointer;
+}
+
+.icon-btn:hover {
+  border-color: var(--accent-2);
+  color: var(--accent-2);
+}
+
+.icon-btn[aria-expanded="true"] {
+  background: var(--btn-active);
+  border-color: var(--btn-active-border);
+  color: var(--btn-active-fg);
 }
 
 .badge {
@@ -92,12 +131,54 @@ body {
   margin-top: 4px;
 }
 
-.load-panel {
+.load-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  z-index: 40;
+}
+
+.load-dialog {
+  position: fixed;
+  z-index: 50;
+  top: 56px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(720px, calc(100vw - 24px));
+  max-height: min(80vh, calc(100dvh - 72px));
+  overflow: auto;
+  border: 1px solid var(--divider);
+  border-radius: 10px;
+  background: var(--panel);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+}
+
+.load-dialog-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   padding: 12px 16px;
   border-bottom: 1px solid var(--divider);
+  position: sticky;
+  top: 0;
+  background: var(--panel);
+}
+
+.load-panel {
+  padding: 12px 16px 16px;
   background: var(--panel);
   display: grid;
   gap: 10px;
+}
+
+.paste-label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.paste-actions {
+  margin-top: 8px;
 }
 
 .load-row {
@@ -162,8 +243,9 @@ body {
 
 .wrap {
   display: flex;
-  height: calc(100vh - 220px);
-  min-height: 320px;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
   box-sizing: border-box;
 }
 
@@ -306,7 +388,11 @@ pre {
   .wrap {
     flex-direction: column;
     height: auto;
-    min-height: calc(100dvh - 280px);
+    min-height: 0;
+  }
+  .load-dialog {
+    top: 12px;
+    max-height: calc(100dvh - 24px);
   }
   .left {
     width: 100%;

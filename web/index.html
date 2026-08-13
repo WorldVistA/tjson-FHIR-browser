@@ -11,6 +11,13 @@
     <div class="topline">
       <strong>tjson FHIR Browser</strong>
       <span class="badge">open source</span>
+      <span class="topline-spacer"></span>
+      <button type="button" class="icon-btn" id="btnLoadToggle" title="Load Bundle" aria-label="Load Bundle" aria-expanded="false" aria-controls="loadDialog">
+        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 7h5l2 2h11v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/>
+          <path d="M12 12v6M9 15h6"/>
+        </svg>
+      </button>
       <button type="button" class="btn" id="btnTheme" title="Toggle light/dark">Theme</button>
     </div>
     <div class="sub">
@@ -21,26 +28,37 @@
     </div>
   </div>
 
-  <div class="load-panel" id="loadPanel">
-    <div class="load-row">
-      <label for="urlInput">URL</label>
-      <input type="url" id="urlInput" placeholder="https://example.org/fhir/Patient/123/$everything or …/Bundle.json">
-      <button type="button" class="btn primary" id="btnLoadUrl">Load URL</button>
-      <button type="button" class="btn" id="btnLoadExample">Load example</button>
+  <div class="load-backdrop" id="loadBackdrop" hidden></div>
+  <div class="load-dialog" id="loadDialog" role="dialog" aria-modal="true" aria-labelledby="loadDialogTitle" hidden>
+    <div class="load-dialog-head">
+      <strong id="loadDialogTitle">Load FHIR Bundle</strong>
+      <button type="button" class="icon-btn" id="btnLoadClose" title="Close" aria-label="Close load dialog">
+        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 6l12 12M18 6L6 18"/>
+        </svg>
+      </button>
     </div>
-    <div class="load-row">
-      <label for="fileInput">File</label>
-      <input type="file" id="fileInput" accept=".json,application/json,application/fhir+json">
-    </div>
-    <div>
-      <label for="pasteInput" style="font-size:12px;color:var(--muted)">Paste JSON</label>
-      <textarea id="pasteInput" placeholder='{"resourceType":"Bundle","type":"collection","entry":[…]}'></textarea>
-      <div class="load-row" style="margin-top:8px">
-        <button type="button" class="btn primary" id="btnLoadPaste">Load paste</button>
-        <button type="button" class="btn" id="btnClearPaste">Clear</button>
+    <div class="load-panel" id="loadPanel">
+      <div class="load-row">
+        <label for="urlInput">URL</label>
+        <input type="url" id="urlInput" placeholder="https://example.org/fhir/Patient/123/$everything or …/Bundle.json">
+        <button type="button" class="btn primary" id="btnLoadUrl">Load URL</button>
+        <button type="button" class="btn" id="btnLoadExample">Load example</button>
       </div>
+      <div class="load-row">
+        <label for="fileInput">File</label>
+        <input type="file" id="fileInput" accept=".json,application/json,application/fhir+json">
+      </div>
+      <div>
+        <label for="pasteInput" class="paste-label">Paste JSON</label>
+        <textarea id="pasteInput" placeholder='{"resourceType":"Bundle","type":"collection","entry":[…]}'></textarea>
+        <div class="load-row paste-actions">
+          <button type="button" class="btn primary" id="btnLoadPaste">Load paste</button>
+          <button type="button" class="btn" id="btnClearPaste">Clear</button>
+        </div>
+      </div>
+      <div class="err" id="loadError" hidden></div>
     </div>
-    <div class="err" id="loadError" hidden></div>
   </div>
 
   <div class="wrap">

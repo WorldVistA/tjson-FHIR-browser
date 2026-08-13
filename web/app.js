@@ -53,6 +53,27 @@ const rtype = (e) => ((e || {}).resource || {}).resourceType || "Unknown";
 const rid = (e) => ((e || {}).resource || {}).id || "";
 const ref = (e) => (e || {}).fullUrl || "";
 
+function isLoadDialogOpen() {
+  const d = el("loadDialog");
+  return d && !d.hidden;
+}
+
+function setLoadDialogOpen(open) {
+  const dialog = el("loadDialog");
+  const backdrop = el("loadBackdrop");
+  const toggle = el("btnLoadToggle");
+  if (!dialog || !backdrop || !toggle) return;
+  dialog.hidden = !open;
+  backdrop.hidden = !open;
+  toggle.setAttribute("aria-expanded", open ? "true" : "false");
+  toggle.title = open ? "Close load dialog" : "Load Bundle";
+  toggle.setAttribute("aria-label", open ? "Close load dialog" : "Load Bundle");
+  if (open) {
+    const url = el("urlInput");
+    if (url) setTimeout(() => url.focus(), 0);
+  }
+}
+
 function showLoadError(msg) {
   const n = el("loadError");
   if (!msg) {
@@ -62,6 +83,7 @@ function showLoadError(msg) {
   }
   n.hidden = false;
   n.textContent = msg;
+  setLoadDialogOpen(true);
 }
 
 function isPlainTextMime(ct) {
@@ -336,6 +358,7 @@ function ingestJson(j, sourceLabel) {
   refillTypes();
   apply();
   draw();
+  setLoadDialogOpen(false);
 }
 
 async function loadFromUrl(url, label) {
@@ -371,7 +394,21 @@ async function loadFromText(text, label) {
   ingestJson(j, label || "paste");
 }
 
+function wireLoadDialog() {
+  const toggle = () => setLoadDialogOpen(!isLoadDialogOpen());
+  el("btnLoadToggle").addEventListener("click", toggle);
+  el("btnLoadClose").addEventListener("click", () => setLoadDialogOpen(false));
+  el("loadBackdrop").addEventListener("click", () => setLoadDialogOpen(false));
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && isLoadDialogOpen()) {
+      e.preventDefault();
+      setLoadDialogOpen(false);
+    }
+  });
+}
+
 function wireLoaders() {
+  wireLoadDialog();
   el("btnLoadUrl").addEventListener("click", () => {
     loadFromUrl(el("urlInput").value).catch((e) => showLoadError(String(e)));
   });
@@ -403,7 +440,9 @@ function wireLoaders() {
   });
   el("btnClearPaste").addEventListener("click", () => {
     el("pasteInput").value = "";
-    showLoadError("");
+    const n = el("loadError");
+    n.hidden = true;
+    n.textContent = "";
   });
 }
 
@@ -466,6 +505,9 @@ async function boot() {
     } catch (e) {
       showLoadError(String(e));
     }
+  } else {
+    // Empty start: open load dialog once so URL/file/paste are discoverable.
+    setLoadDialogOpen(true);
   }
 }
 
