@@ -54,6 +54,9 @@ rm -rf "$V/web"
 mkdir -p "$V/web"
 cp "$PKG/web/index.js" "$V/web/index.js"
 cp "$PKG/web/tjson.js" "$V/web/tjson.js"
+# 0.10+ may ship sibling wasm for direct tjson.js imports; index.js still inlines wasm.
+[[ -f "$PKG/web/tjson_bg.wasm" ]] && cp "$PKG/web/tjson_bg.wasm" "$V/web/tjson_bg.wasm"
+[[ -f "$PKG/web/tjson_bg.wasm.d.ts" ]] && cp "$PKG/web/tjson_bg.wasm.d.ts" "$V/web/tjson_bg.wasm.d.ts"
 # Cache-bust internal ./tjson.js imports so a new index.js cannot pair with a stale tjson.js
 sed -i "s|from './tjson.js'|from './tjson.js?v=$VERSION'|g" "$V/web/index.js"
 [[ -f "$PKG/web/index.d.ts" ]] && cp "$PKG/web/index.d.ts" "$V/web/index.d.ts"

@@ -7,7 +7,7 @@
  */
 
 // Keep in sync with vendor/tjson/VERSION (update-vendored-tjson.sh rewrites this).
-const TJSON_VERSION = "0.8.0";
+const TJSON_VERSION = "0.10.1";
 const TJSON_PKG = new URL(
   `../vendor/tjson/web/index.js?v=${TJSON_VERSION}`,
   import.meta.url
