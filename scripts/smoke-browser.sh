@@ -31,6 +31,8 @@ fi
 grep -q "fromJson" web/app.js && pass "app.js uses fromJson" || bad "app.js missing fromJson"
 grep -q "highlightTjson\|tjson-highlight.js" web/app.js && pass "app.js loads client TJSON highlight" || bad "app.js missing highlight import"
 grep -q "tjson-hl" web/style.css && pass "style.css has tjson-hl palette" || bad "style.css missing tjson-hl"
+grep -q 'chkTjsonHl:not(:checked)' web/style.css && pass "style.css highlight-off via CSS" || bad "missing highlight-off CSS"
+grep -q 'id="chkTjsonHl"' web/index.html && pass "highlight checkbox in index" || bad "missing chkTjsonHl"
 grep -q "btnLoadUrl" web/index.html && pass "URL loader control" || bad "missing URL loader"
 grep -q "fileInput" web/index.html && pass "file loader control" || bad "missing file loader"
 grep -q "pasteInput" web/index.html && pass "paste loader control" || bad "missing paste loader"
