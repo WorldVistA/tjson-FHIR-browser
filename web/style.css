@@ -350,32 +350,37 @@ pre {
   background: var(--panel);
 }
 
-/* TJSON scopes: readable contrast, low chroma (app chrome, not textjson.com showcase) */
-body.theme-dark pre.tjson-hl .tjson-key { color: #7aa2d4; }
-body.theme-dark pre.tjson-hl .tjson-bare { color: #8fad86; }
-body.theme-dark pre.tjson-hl .tjson-string { color: #c4b395; }
-body.theme-dark pre.tjson-hl .tjson-number { color: #c9956c; }
-body.theme-dark pre.tjson-hl .tjson-boolean { color: #6faba0; }
-body.theme-dark pre.tjson-hl .tjson-null { color: #94a3b8; }
-body.theme-dark pre.tjson-hl .tjson-punctuation { color: #7c8a9e; }
-body.theme-dark pre.tjson-hl .tjson-pipe { color: #7c8a9e; }
-body.theme-dark pre.tjson-hl .tjson-marker { color: #6e9eb8; }
-body.theme-dark pre.tjson-hl .tjson-escape { color: #b88aa0; }
-body.theme-dark pre.tjson-hl .tjson-multiline { color: #c4b395; }
-body.theme-dark pre.tjson-hl .tjson-comment { color: #94a3b8; font-style: italic; }
+/*
+ * TJSON token colors — designed for this browser, not textjson.com.
+ * Data (bare / string / number / boolean / multiline): high luminance contrast.
+ * Structure (punctuation / pipe / marker): quieter, still legible.
+ * Hue only separates roles; chroma stays low (business UI, not a showcase).
+ */
+body.theme-dark pre.tjson-hl .tjson-key { color: #a8c4e0; }
+body.theme-dark pre.tjson-hl .tjson-bare { color: #e6f0e8; }
+body.theme-dark pre.tjson-hl .tjson-string { color: #f2eee6; }
+body.theme-dark pre.tjson-hl .tjson-number { color: #f0e0d0; }
+body.theme-dark pre.tjson-hl .tjson-boolean { color: #dcefeb; }
+body.theme-dark pre.tjson-hl .tjson-null { color: #9aa7b8; }
+body.theme-dark pre.tjson-hl .tjson-punctuation { color: #4a5568; }
+body.theme-dark pre.tjson-hl .tjson-pipe { color: #4a5568; }
+body.theme-dark pre.tjson-hl .tjson-marker { color: #3d4656; }
+body.theme-dark pre.tjson-hl .tjson-escape { color: #c9a8b4; }
+body.theme-dark pre.tjson-hl .tjson-multiline { color: #f2eee6; }
+body.theme-dark pre.tjson-hl .tjson-comment { color: #6b778a; font-style: italic; }
 
-body.theme-light pre.tjson-hl .tjson-key { color: #1e5a8a; }
-body.theme-light pre.tjson-hl .tjson-bare { color: #2f6b3a; }
-body.theme-light pre.tjson-hl .tjson-string { color: #6b5740; }
-body.theme-light pre.tjson-hl .tjson-number { color: #8a4f28; }
-body.theme-light pre.tjson-hl .tjson-boolean { color: #0f6660; }
+body.theme-light pre.tjson-hl .tjson-key { color: #1e3a5f; }
+body.theme-light pre.tjson-hl .tjson-bare { color: #0f1f14; }
+body.theme-light pre.tjson-hl .tjson-string { color: #1c1917; }
+body.theme-light pre.tjson-hl .tjson-number { color: #3b2110; }
+body.theme-light pre.tjson-hl .tjson-boolean { color: #0f3d3a; }
 body.theme-light pre.tjson-hl .tjson-null { color: #475569; }
-body.theme-light pre.tjson-hl .tjson-punctuation { color: #64748b; }
-body.theme-light pre.tjson-hl .tjson-pipe { color: #64748b; }
-body.theme-light pre.tjson-hl .tjson-marker { color: #1e5a8a; }
-body.theme-light pre.tjson-hl .tjson-escape { color: #8a4560; }
-body.theme-light pre.tjson-hl .tjson-multiline { color: #6b5740; }
-body.theme-light pre.tjson-hl .tjson-comment { color: #475569; font-style: italic; }
+body.theme-light pre.tjson-hl .tjson-punctuation { color: #94a3b8; }
+body.theme-light pre.tjson-hl .tjson-pipe { color: #94a3b8; }
+body.theme-light pre.tjson-hl .tjson-marker { color: #cbd5e1; }
+body.theme-light pre.tjson-hl .tjson-escape { color: #7f1d3a; }
+body.theme-light pre.tjson-hl .tjson-multiline { color: #1c1917; }
+body.theme-light pre.tjson-hl .tjson-comment { color: #64748b; font-style: italic; }
 
 .bar-meta {
   display: flex;
