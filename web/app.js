@@ -283,7 +283,11 @@ function setFmt(f) {
   draw();
 }
 
+let detailGen = 0;
+
 async function drawDetailAsync() {
+  const gen = ++detailGen;
+  const detail = el("detail");
   el("meta").textContent =
     st.sourceLabel +
     ": " +
@@ -294,25 +298,43 @@ async function drawDetailAsync() {
     st.all.length +
     " total)";
   if (!st.pick) {
-    el("detail").textContent = st.all.length
+    detail.classList.remove("tjson-hl");
+    detail.textContent = st.all.length
       ? "Select a resource"
       : "Load a Bundle via URL, file, or paste";
     return;
   }
   const obj = (st.pick || {}).resource || {};
   if (st.fmt === "json") {
-    el("detail").textContent = JSON.stringify(obj, null, 2);
+    detail.classList.remove("tjson-hl");
+    detail.textContent = JSON.stringify(obj, null, 2);
     return;
   }
-  el("detail").textContent = "Loading TJSON...";
+  detail.classList.remove("tjson-hl");
+  detail.textContent = "Loading TJSON...";
   try {
     const m = await ensureTjson();
+    if (gen !== detailGen) return;
     const tobj = prepareForTjson(obj);
     const js = JSON.stringify(tobj);
-    el("detail").textContent =
+    const plain =
       typeof m.fromJson === "function" ? m.fromJson(js, {}) : m.stringify(js, {});
+    // Plain text first (readable before / without highlighter).
+    detail.textContent = plain;
+    try {
+      const { highlightTjson } = await import("./tjson-highlight.js");
+      const html = await highlightTjson(plain);
+      if (gen !== detailGen || st.fmt !== "tjson") return;
+      detail.classList.add("tjson-hl");
+      detail.innerHTML = html;
+    } catch (hlErr) {
+      // Keep plain TJSON if tokenizer CDN/wasm fails.
+      console.warn("TJSON highlight skipped:", hlErr);
+    }
   } catch (err) {
-    el("detail").textContent =
+    if (gen !== detailGen) return;
+    detail.classList.remove("tjson-hl");
+    detail.textContent =
       "TJSON failed (check vendor/tjson/web; run scripts/update-vendored-tjson.sh; hard-refresh): " +
       String(err);
   }

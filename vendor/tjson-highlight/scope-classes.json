@@ -1,0 +1,49 @@
+{
+  "_comment": [
+    "Scope name -> CSS class, for rendering TJSON on a web page. See",
+    "docs/web-highlighting.md. Kept as data rather than prose because",
+    "tests/scopes.js checks it against every scope the grammar actually emits,",
+    "so it cannot quietly fall behind the grammar the way a hand-written table",
+    "would.",
+    "",
+    "Matching is by prefix and the list is ORDERED: take the first entry whose",
+    "prefix the scope equals or starts with (followed by a dot). Order matters in",
+    "three places -- .begin.bare must beat .definition.string, .multiline-margin",
+    "must beat .definition.string, and .separator.table must beat .separator.",
+    "",
+    "Walk a token's scopes from innermost to outermost and take the first hit;",
+    "the innermost scope is the most specific thing known about that text."
+  ],
+
+  "classes": [
+    ["punctuation.definition.string.begin.bare", "tjson-bare"],
+    ["punctuation.definition.string.multiline-margin", "tjson-multiline"],
+    ["punctuation.definition.fold-marker", "tjson-marker"],
+    ["punctuation.definition.string", "tjson-string"],
+    ["punctuation.definition.array", "tjson-punctuation"],
+    ["punctuation.definition.dictionary", "tjson-punctuation"],
+    ["punctuation.section.embedded", "tjson-punctuation"],
+    ["punctuation.separator.table", "tjson-pipe"],
+    ["punctuation.separator", "tjson-punctuation"],
+    ["keyword.operator", "tjson-marker"],
+    ["keyword.control.indent-adjustment", "tjson-marker"],
+    ["entity.other.attribute-name", "tjson-key"],
+    ["constant.character.escape", "tjson-escape"],
+    ["constant.language.boolean", "tjson-boolean"],
+    ["constant.language.null", "tjson-null"],
+    ["constant.numeric", "tjson-number"],
+    ["string.quoted.double", "tjson-string"],
+    ["string.unquoted", "tjson-bare"],
+    ["markup.raw.block", "tjson-multiline"],
+    ["comment", "tjson-comment"]
+  ],
+
+  "unstyled": {
+    "_comment": [
+      "Deliberately given no class. `meta.*` marks a region rather than a token",
+      "and colouring it would paint whole lines. The indent is whitespace: it",
+      "carries structure, but there is nothing to see."
+    ],
+    "prefixes": ["meta", "punctuation.whitespace.indent"]
+  }
+}

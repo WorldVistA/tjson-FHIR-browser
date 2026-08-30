@@ -1,0 +1,957 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "TJSON",
+	"scopeName": "source.tjson",
+	"fileTypes": [
+		"tjson"
+	],
+	"comment": "Bare strings: a bare string opens with a single space and has no closing delimiter — a one-sided quote. That space is the entire type marker: 'k:true' is the boolean, 'k: true' is the string \"true\". The opener may also be written '_' ('k:_true'), which a generator emits only when asked (tjson --bare-strings marked). The two are interchangeable, occupy the same one column, and may be mixed freely within a document or even a line, so every rule that matches an opener matches [ _] and every rule that matches the first character of the CONTENT excludes '_' as well — a bare string may not begin with one, which is what keeps the marker distinguishable from the data it introduces. The content is bounded at BOTH ends, by different sets. The first character may not be a quotelike, a backtick, '/', '|', a comma, a space, '_', or a square or curly bracket. The last may not be a quotelike, a backtick, '|', a comma, any whitespace, or a square or curly bracket -- but '/' and '_' ARE allowed there, because they are barred at the start only for looking like a fold marker, a comment or the type marker, and nothing in final position can be mistaken for those. The brackets are the one exclusion that is identical at both ends and unsided within each end: ']abc' and 'abc[' are refused along with '[abc' and 'abc]', because pairing them up would make the rule turn on what matches what, and a bracket at an edge can connect visually with one facing toward it in an indent marker or another bare string. The lookalike sets are the spec's SQUAREBRACKETLIKE and CURLYBRACKETLIKE, written out here because no Unicode property carves them without also taking parentheses, which bare keys allow. Corner brackets are absent on purpose -- they carry Quotation_Mark and the quotelike exclusion already has them. Interior brackets stay legal: 'a[b' is a bare string, and nothing structural begins mid-value. That asymmetry is why both classes are written out in every content rule instead of one serving twice, and why a one-character bare string needs a third class satisfying both at once. Constraining only the first character, as this once did, let 'k: abc,' and 'k: abc|' render as clean strings when the parser rejects them. One place looks like an opener and is not: after a fold marker. What follows '/ ' is data resuming mid-string, so the space in '/  ccc' is the string's own internal space and an '_' there is a literal underscore — 'k: aaa bbb' folded to '/ _ccc' is \"aaa bbb_ccc\". No marker rule applies on a continuation line. It is therefore scoped as punctuation.definition.string.begin.bare, for the same reason the opening '\"' of a quoted string is scoped punctuation.definition.string.begin: it is syntax introducing content, not content. Keeping it out of string.unquoted.bare means that scope always covers exactly the data. There is deliberately no matching *.end scope. A bare string ends on two spaces or on end of line, and on nothing else. End of line is zero-width and cannot carry a scope at all; the two spaces are already the separator between inline entries or between Type 3 array elements, so they belong to the neighbour rather than to the string. A '|' ends one only where a table is padded below the minimum '  |' — that is precisely why the spec forbids a '|' inside a bare string in a table at all, since the prohibition is what lets an underpadded table parse deterministically. Outside a table 'k: bare | string' is the single string \"bare | string\" and the pipe is ordinary content. A comma never ends one. A bare string may contain commas and commonly does; it simply may not begin or end with one, and as of spec v0.5.0 may not sit in a comma-packed array at all — precisely because a content comma could not be told from a separator. A bare string with commas belongs in a Type 3 array, where two spaces separate and the commas are ordinary content. Line comments have the same one-sided shape and every grammar treats them this way.",
+	"patterns": [
+		{
+			"include": "#comments"
+		},
+		{
+			"include": "#indent-glyphs"
+		},
+		{
+			"include": "#marker-chain"
+		},
+		{
+			"include": "#fold-markers"
+		},
+		{
+			"include": "#table-rows"
+		},
+		{
+			"include": "#object-entry-multiline"
+		},
+		{
+			"include": "#object-entry-multiline-quoted"
+		},
+		{
+			"include": "#object-entries-quoted"
+		},
+		{
+			"include": "#object-entries"
+		},
+		{
+			"include": "#scalar-values"
+		},
+		{
+			"include": "#folded-keys"
+		},
+		{
+			"include": "#multiline-strings"
+		}
+	],
+	"repository": {
+		"comments": {
+			"comment": "Any number of spaces (not necessarily even) before //",
+			"match": "^ *//.*$",
+			"name": "comment.line.double-slash.tjson"
+		},
+		"indent-glyphs": {
+			"comment": "A /< or /> alone on a line — even indent + any nesting markers + mandatory bare-string separator space + glyph. The markers matter: a generator shifting the frame at the very start of a document writes '[  /<', the array marker and the glyph together, and with the marker chain omitted here that line matched nothing at all — not the marker, not the glyph, the whole line unscoped, while the '/>' closing it three lines down highlighted correctly. Every other content rule in this grammar already carries '((?:  )*)((?:\\[ )*)' for exactly this reason; a glyph is one more thing that can follow a marker, and it was the one form the list left out.",
+			"match": "^((?:  )*)((?:\\[ |\\{ )*) (/[<>])\\s*$",
+			"name": "meta.indent-glyph.tjson",
+			"captures": {
+				"1": {
+					"name": "punctuation.whitespace.indent.tjson"
+				},
+				"2": {
+					"patterns": [
+						{
+							"match": "\\[ ",
+							"name": "keyword.operator.array-marker.tjson"
+						},
+						{
+							"match": "\\{ ",
+							"name": "keyword.operator.object-marker.tjson"
+						}
+					]
+				},
+				"3": {
+					"name": "keyword.control.indent-adjustment.tjson"
+				}
+			}
+		},
+		"fold-markers": {
+			"comment": "Fold continuation line: even indent, then '/ ', then the rest of the value. What follows the marker is only a string when the value being folded is one, and the format says which: a folded BARE string repeats its one-sided opening quote after the marker, so it alone is preceded by a second space. Everything else -- numbers, quoted strings, keys -- continues directly. A single rule scoping all of them string.unquoted painted the tail of a folded number as a string, so a number that fits on one line and the same number folded were different colours.",
+			"patterns": [
+				{
+					"comment": "Bare string continuation: the second space is its opening quote again.",
+					"match": "^((?:  )*)(/ )( )(.*)$",
+					"name": "meta.fold.continuation.tjson",
+					"captures": {
+						"1": {
+							"name": "punctuation.whitespace.indent.tjson"
+						},
+						"2": {
+							"name": "punctuation.definition.fold-marker.tjson"
+						},
+						"3": {
+							"name": "punctuation.definition.string.begin.bare.tjson"
+						},
+						"4": {
+							"name": "string.unquoted.fold-continuation.tjson"
+						}
+					}
+				},
+				{
+					"comment": "Number continuation: only digits and the exponent/sign characters a split number can begin with, so nothing else can claim this scope.",
+					"match": "^((?:  )*)(/ )([0-9][0-9]*|[.eE+-][0-9+-]*[0-9]*)$",
+					"name": "meta.fold.continuation.tjson",
+					"captures": {
+						"1": {
+							"name": "punctuation.whitespace.indent.tjson"
+						},
+						"2": {
+							"name": "punctuation.definition.fold-marker.tjson"
+						},
+						"3": {
+							"name": "constant.numeric.tjson"
+						}
+					}
+				},
+				{
+					"comment": "Anything else -- a quoted string or a key continuing. Which of the two cannot be told from this line alone, and a grammar has no memory of the line above, so the content carries no scope of its own rather than a guessed one. The marker is still marked.",
+					"match": "^((?:  )*)(/ )(.*)$",
+					"name": "meta.fold.continuation.tjson",
+					"captures": {
+						"1": {
+							"name": "punctuation.whitespace.indent.tjson"
+						},
+						"2": {
+							"name": "punctuation.definition.fold-marker.tjson"
+						}
+					}
+				}
+			]
+		},
+		"table-rows": {
+			"comment": "Pipe-table row: tokenize pipes and cell content. Boolean/null/number fire before key so the key pattern only fires on header row identifiers in valid TJSON.",
+			"begin": "^((?:  )*)((?:\\[ )*)(?=\\|)",
+			"end": "$",
+			"name": "meta.table.row.tjson",
+			"beginCaptures": {
+				"1": {
+					"name": "punctuation.whitespace.indent.tjson"
+				},
+				"2": {
+					"name": "keyword.operator.array-marker.tjson"
+				}
+			},
+			"patterns": [
+				{
+					"comment": "Pipe separating table cells. A delimiter, not an operator, and deliberately a different scope from the multiline string margin -- the two use the same character but are unrelated constructs.",
+					"match": "\\|",
+					"name": "punctuation.separator.table.tjson"
+				},
+				{
+					"comment": "A cell whose value opens with a bracket, sitting directly against the pipe. The leading-space rule decides here exactly as it does after a colon: '|[1,2]' is the array and '| [1,2]' is the bare string \"[1,2]\", whose own rule starts at that space and so matches further left. A bracket followed by whitespace can be neither, so the lookahead refuses it. Generators never emit this -- a column holding arrays makes them abandon the table for block objects -- so it exists for hand editing, which is where the compact form earns its keep most.",
+					"begin": "(?<=\\|)(?=[\\[{]\\S)",
+					"end": "(?=\\||$)",
+					"patterns": [
+						{
+							"include": "#bracketed-values"
+						}
+					]
+				},
+				{
+					"comment": "Boolean cell (no leading space)",
+					"match": "(true|false)\\b",
+					"captures": {
+						"1": {
+							"name": "constant.language.boolean.tjson"
+						}
+					}
+				},
+				{
+					"comment": "Null cell (no leading space)",
+					"match": "null\\b",
+					"name": "constant.language.null.tjson"
+				},
+				{
+					"comment": "Number cell (no leading space)",
+					"match": "-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b",
+					"name": "constant.numeric.tjson"
+				},
+				{
+					"comment": "Quoted cell (key or string value — both appear without leading space)",
+					"include": "#json-strings"
+				},
+				{
+					"comment": "String cell. Group 1 is the one-sided opening quote. The cell's effective right delimiter is '  |' -- at least two spaces, then the pipe -- so in a properly padded table the two spaces end the string and the pipe is simply the next token, already scoped as a table pipe in its own right. Only where padding falls below that minimum does the '|' itself end the string, which is why the spec forbids a '|' inside a bare string in a table at all.",
+					"match": "([ _])((?:[^\\p{Quotation_Mark}`/|, _\\[\\]{}❲❳⟦⟧⦋⦌【】〚〛［］❴❵｛｝][^|]*?[^\\p{Quotation_Mark}`|,\\s\\[\\]{}❲❳⟦⟧⦋⦌【】〚〛［］❴❵｛｝]|[^\\p{Quotation_Mark}`/|,\\s_\\[\\]{}❲❳⟦⟧⦋⦌【】〚〛［］❴❵｛｝]))(?=\\s*\\||\\s*$)",
+					"name": "meta.bare-string.tjson",
+					"captures": {
+						"1": {
+							"name": "punctuation.definition.string.begin.bare.tjson"
+						},
+						"2": {
+							"name": "string.unquoted.bare.tjson"
+						}
+					}
+				},
+				{
+					"comment": "Key cell (no space, identifier — only occurs on header row in valid TJSON)",
+					"match": "[\\p{L}\\p{N}][^|]*?(?=\\s*\\||\\s*$)",
+					"name": "entity.other.attribute-name.bare.tjson"
+				}
+			]
+		},
+		"object-entry-multiline": {
+			"comment": "Bare key whose value is a multiline string: ` (minimal), `` (pipe-margin), ``` (transparent).",
+			"begin": "^((?:  )*)((?:\\[ )*)(\\{ )?([\\p{L}\\p{N}][\\p{L}\\p{N}_()/'.!%&, -]*?)(:)( )(```|``|`)$",
+			"end": "^([ ]*)( )(\\7)[ ]*$",
+			"name": "meta.object.entry.multiline.tjson",
+			"beginCaptures": {
+				"1": {
+					"name": "punctuation.whitespace.indent.tjson"
+				},
+				"2": {
+					"name": "keyword.operator.array-marker.tjson"
+				},
+				"3": {
+					"name": "keyword.operator.object-marker.tjson"
+				},
+				"4": {
+					"name": "entity.other.attribute-name.bare.tjson"
+				},
+				"5": {
+					"name": "punctuation.separator.key-value.tjson"
+				},
+				"6": {
+					"name": "punctuation.definition.string.begin.tjson"
+				},
+				"7": {
+					"name": "punctuation.definition.string.begin.tjson"
+				}
+			},
+			"endCaptures": {
+				"2": {
+					"name": "punctuation.definition.string.end.tjson"
+				},
+				"3": {
+					"name": "punctuation.definition.string.end.tjson"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#multiline-body"
+				}
+			]
+		},
+		"object-entries-quoted": {
+			"comment": "Double-quoted key: value — key is a JSON string, value handled same as object-entries",
+			"begin": "^((?:  )*)((?:\\[ )*)(\\{ )?(\")((?:[^\"\\\\]|\\\\.)*)(\")(:)",
+			"end": "$",
+			"name": "meta.object.entry.tjson",
+			"beginCaptures": {
+				"1": {
+					"name": "punctuation.whitespace.indent.tjson"
+				},
+				"2": {
+					"name": "keyword.operator.array-marker.tjson"
+				},
+				"3": {
+					"name": "keyword.operator.object-marker.tjson"
+				},
+				"4": {
+					"name": "punctuation.definition.string.begin.tjson"
+				},
+				"5": {
+					"name": "entity.other.attribute-name.quoted.tjson"
+				},
+				"6": {
+					"name": "punctuation.definition.string.end.tjson"
+				},
+				"7": {
+					"name": "punctuation.separator.key-value.tjson"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#inline-value"
+				},
+				{
+					"include": "#inline-entries-quoted"
+				},
+				{
+					"include": "#inline-entries"
+				}
+			]
+		},
+		"object-entries": {
+			"comment": "key: value — begin matches indent+markers+key+colon; patterns handle the value",
+			"begin": "^((?:  )*)((?:\\[ )*)(\\{ )?([\\p{L}\\p{N}][\\p{L}\\p{N}_()/'.!%&, -]*?)(:)",
+			"end": "$",
+			"name": "meta.object.entry.tjson",
+			"beginCaptures": {
+				"1": {
+					"name": "punctuation.whitespace.indent.tjson"
+				},
+				"2": {
+					"name": "keyword.operator.array-marker.tjson"
+				},
+				"3": {
+					"name": "keyword.operator.object-marker.tjson"
+				},
+				"4": {
+					"name": "entity.other.attribute-name.bare.tjson"
+				},
+				"5": {
+					"name": "punctuation.separator.key-value.tjson"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#inline-value"
+				},
+				{
+					"include": "#inline-entries-quoted"
+				},
+				{
+					"include": "#inline-entries"
+				}
+			]
+		},
+		"scalar-values": {
+			"comment": "A value on its own line: an array element, or the whole document when the root is a scalar or an inline array. Same spacing rule as after a colon, with the indent standing in for it — leading whitespace is even for a scalar and odd for a bare string, because the bare string adds its one-sided opening quote to the even indent.",
+			"patterns": [
+				{
+					"comment": "A line whose value opens with a bracket: MINIMAL JSON, or an empty container. Both are gap 0 -- the indent is even and the bracket sits directly on it -- which is what tells them from a bare string, whose one-sided opening quote puts its first character at an odd column. What follows the bracket has to be looked at, and only just: a bracket followed by whitespace is a nesting marker, and a bracket that ends the line is the first character of either one, so neither may be claimed here -- the engine hands the rule a newline at end of line, which is why one class excludes both cases. That is the parser's own test for a MINIMAL JSON candidate, less its exclusion of '[]' and '{}' -- those reach the empty-container rules through this same pattern. Testing instead for a closing bracket with no space in between, as this once did, rejected the legal '[\"a b\"]': MINIMAL JSON forbids whitespace only OUTSIDE its strings. A line rejected here falls through every remaining rule and loses even its indent scope.",
+					"begin": "^((?:  )*)((?:\\[ )*)(?=\\[\\S|\\{\\S)",
+					"end": "$",
+					"beginCaptures": {
+						"1": {
+							"name": "punctuation.whitespace.indent.tjson"
+						},
+						"2": {
+							"name": "keyword.operator.array-marker.tjson"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#inline-value"
+						}
+					]
+				},
+				{
+					"comment": "Line whose first value is a scalar; any further elements follow as ', ...'",
+					"begin": "^((?:  )*)((?:\\[ )*)(\\{ )?((?:(?:true|false|null)\\b|-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b))",
+					"end": "$",
+					"name": "meta.array.inline.tjson",
+					"beginCaptures": {
+						"1": {
+							"name": "punctuation.whitespace.indent.tjson"
+						},
+						"2": {
+							"name": "keyword.operator.array-marker.tjson"
+						},
+						"3": {
+							"name": "keyword.operator.object-marker.tjson"
+						},
+						"4": {
+							"patterns": [
+								{
+									"include": "#scalar-atoms"
+								}
+							]
+						}
+					},
+					"patterns": [
+						{
+							"include": "#array-elements"
+						}
+					]
+				},
+				{
+					"comment": "Type 3 packed array of bare strings at line level: the first element is followed by '  '. A lone bare string can never contain two consecutive spaces, so a '  ' after the first element can only be a separator, which makes this line an array with no further evidence needed. Commas inside the elements are content here.",
+					"begin": "^((?:  )*)((?:\\[ )*)([ _])((?:[^\\p{Quotation_Mark}`/|, _\\[\\]{}❲❳⟦⟧⦋⦌【】〚〛［］❴❵｛｝](?:(?!  )[^\\n])*?[^\\p{Quotation_Mark}`|,\\s\\[\\]{}❲❳⟦⟧⦋⦌【】〚〛［］❴❵｛｝]|[^\\p{Quotation_Mark}`/|,\\s_\\[\\]{}❲❳⟦⟧⦋⦌【】〚〛［］❴❵｛｝]))(?=  )",
+					"end": "$",
+					"name": "meta.array.inline.tjson",
+					"beginCaptures": {
+						"1": {
+							"name": "punctuation.whitespace.indent.tjson"
+						},
+						"2": {
+							"name": "keyword.operator.array-marker.tjson"
+						},
+						"3": {
+							"name": "punctuation.definition.string.begin.bare.tjson"
+						},
+						"4": {
+							"name": "string.unquoted.bare.tjson"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#array-elements"
+						}
+					]
+				},
+				{
+					"comment": "Line whose first value is a quoted string: one element on its own line, or the first of a packed array. A quoted key is already claimed by #object-entries-quoted further up, so a quote reaching here is a value. Without this rule a quoted array element sitting on its own line came out with no scope at all.",
+					"begin": "^((?:  )*)((?:\\[ )*)(?=\")",
+					"end": "$",
+					"name": "meta.array.inline.tjson",
+					"beginCaptures": {
+						"1": {
+							"name": "punctuation.whitespace.indent.tjson"
+						},
+						"2": {
+							"name": "keyword.operator.array-marker.tjson"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#array-elements"
+						}
+					]
+				},
+				{
+					"comment": "Otherwise the line is a single bare string, commas and all",
+					"match": "^((?:  )*)((?:\\[ )*)([ _])((?:[^\\p{Quotation_Mark}`/|, _\\[\\]{}❲❳⟦⟧⦋⦌【】〚〛［］❴❵｛｝](?:(?!  )[^\\n])*?[^\\p{Quotation_Mark}`|,\\s\\[\\]{}❲❳⟦⟧⦋⦌【】〚〛［］❴❵｛｝]|[^\\p{Quotation_Mark}`/|,\\s_\\[\\]{}❲❳⟦⟧⦋⦌【】〚〛［］❴❵｛｝])(?=  | *$))",
+					"name": "meta.bare-string.tjson",
+					"captures": {
+						"1": {
+							"name": "punctuation.whitespace.indent.tjson"
+						},
+						"2": {
+							"name": "keyword.operator.array-marker.tjson"
+						},
+						"3": {
+							"name": "punctuation.definition.string.begin.bare.tjson"
+						},
+						"4": {
+							"name": "string.unquoted.bare.tjson"
+						}
+					}
+				}
+			]
+		},
+		"inline-entries": {
+			"comment": "Continuation key:value pair on the same line. The gap is an even number of spaces, at least two: two spaces is what terminates the preceding bare string, and the generator widens the gap in multiples of two (tjson --kv-pack-multiple, default 2, meaning four spaces). Match the whole run so the separator is one token instead of a scoped tail with unscoped filler in front of it.",
+			"begin": "((?:  )+)([\\p{L}\\p{N}][\\p{L}\\p{N}_()/'.!%&, -]*?)(:)",
+			"end": "(?=  |$)",
+			"name": "meta.object.entry.inline.tjson",
+			"beginCaptures": {
+				"1": {
+					"name": "punctuation.separator.inline.tjson"
+				},
+				"2": {
+					"name": "entity.other.attribute-name.bare.tjson"
+				},
+				"3": {
+					"name": "punctuation.separator.key-value.tjson"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#inline-value"
+				}
+			]
+		},
+		"inline-value": {
+			"comment": "The value after a colon. Spacing carries the type, measured from the colon: gap 0 is a scalar, gap 1 is a bare string, gap 2 opens an inline array whose first element is a scalar, gap 3 opens one whose first element is a bare string. The lookbehind pins every pattern to the colon so the gap length is what decides, rather than letting whichever rule starts leftmost win — that was the old failure mode, and it made every scalar in an inline array render as a string.",
+			"patterns": [
+				{
+					"include": "#json-strings"
+				},
+				{
+					"comment": "Inline opening indent glyph (key: /<) — must be at end of line",
+					"match": " (/<)\\s*$",
+					"captures": {
+						"1": {
+							"name": "keyword.control.indent-adjustment.tjson"
+						}
+					}
+				},
+				{
+					"comment": "Gap 0 after the colon: k:[], k:{} or MINIMAL JSON. Gap 1 needs no guard here -- 'k: [1,2]' is the bare string \"[1,2]\", and its rule starts at the space, one character further left, so it wins on position rather than on order.",
+					"include": "#bracketed-values"
+				},
+				{
+					"comment": "Inline array, gap 2, first element a scalar: k:  1, 2, 3. Runs to end of line rather than stopping at '  ', because '  ' is the Type 3 element separator and stopping there would end the array at its own first separator. Nothing else can follow a packed array on the line: key-value packing takes only BASIC TYPES, and a nonempty array is not one.",
+					"begin": "(?<=:)(  )((?:(?:true|false|null)\\b|-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b))",
+					"end": "$",
+					"name": "meta.array.inline.tjson",
+					"beginCaptures": {
+						"2": {
+							"patterns": [
+								{
+									"include": "#scalar-atoms"
+								}
+							]
+						}
+					},
+					"patterns": [
+						{
+							"include": "#array-elements"
+						}
+					]
+				},
+				{
+					"comment": "Inline array, gap 3, Type 3 packed bare strings: k:   a   b, and the single-element k:   a. Gap 3 means the first element is a bare string, and a bare string can only be Type 3 packed, so this is the only form the gap admits -- there is no Type 2 counterpart to tell it apart from. A Type 3 element may contain commas, so the element ends only at '  ' or end of line -- that is what makes 'k:   a, b   c' the two elements 'a, b' and 'c' rather than three.",
+					"begin": "(?<=:)(  )([ _])((?:[^\\p{Quotation_Mark}`/|, _\\[\\]{}❲❳⟦⟧⦋⦌【】〚〛［］❴❵｛｝](?:(?!  )[^\\n])*?[^\\p{Quotation_Mark}`|,\\s\\[\\]{}❲❳⟦⟧⦋⦌【】〚〛［］❴❵｛｝]|[^\\p{Quotation_Mark}`/|,\\s_\\[\\]{}❲❳⟦⟧⦋⦌【】〚〛［］❴❵｛｝])(?=  | *$))",
+					"end": "$",
+					"name": "meta.array.inline.tjson",
+					"beginCaptures": {
+						"2": {
+							"name": "punctuation.definition.string.begin.bare.tjson"
+						},
+						"3": {
+							"name": "string.unquoted.bare.tjson"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#array-elements"
+						}
+					]
+				},
+				{
+					"comment": "Inline array, gap 2, first element quoted: Type 2 'k:  \"a,b\",  c' or Type 3 'k:  \"a\"  \"b\"'",
+					"begin": "(?<=:)(  )(?=\")",
+					"end": "$",
+					"name": "meta.array.inline.tjson",
+					"beginCaptures": {},
+					"patterns": [
+						{
+							"include": "#array-elements"
+						}
+					]
+				},
+				{
+					"comment": "Scalar value, gap 0: k:true",
+					"match": "(?<=:)((?:(?:true|false|null)\\b|-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b))",
+					"captures": {
+						"1": {
+							"patterns": [
+								{
+									"include": "#scalar-atoms"
+								}
+							]
+						}
+					}
+				},
+				{
+					"comment": "Bare string value, gap 1: k: true. Group 1 is the one-sided opening quote; commas inside are content.",
+					"match": "(?<=:)([ _])((?:[^\\p{Quotation_Mark}`/|, _\\[\\]{}❲❳⟦⟧⦋⦌【】〚〛［］❴❵｛｝](?:(?!  )[^\\n])*?[^\\p{Quotation_Mark}`|,\\s\\[\\]{}❲❳⟦⟧⦋⦌【】〚〛［］❴❵｛｝]|[^\\p{Quotation_Mark}`/|,\\s_\\[\\]{}❲❳⟦⟧⦋⦌【】〚〛［］❴❵｛｝])(?=  | *$))",
+					"name": "meta.bare-string.tjson",
+					"captures": {
+						"1": {
+							"name": "punctuation.definition.string.begin.bare.tjson"
+						},
+						"2": {
+							"name": "string.unquoted.bare.tjson"
+						}
+					}
+				}
+			]
+		},
+		"bracketed-values": {
+			"comment": "Everything a bracket can open where a value is expected: the two empty containers, which the parser reads as native TJSON, and MINIMAL JSON, which is an embedded JSON fragment. The empties come first because they are not MINIMAL JSON at all and keep their own scopes. This is shared rather than written twice: a table cell admits exactly these three, and tells them from a bare string by the same leading-space test that does it after a colon.",
+			"patterns": [
+				{
+					"comment": "Empty array",
+					"match": "(\\[)(\\])",
+					"captures": {
+						"1": {
+							"name": "punctuation.definition.array.begin.tjson"
+						},
+						"2": {
+							"name": "punctuation.definition.array.end.tjson"
+						}
+					}
+				},
+				{
+					"comment": "Empty object",
+					"match": "(\\{)(\\})",
+					"captures": {
+						"1": {
+							"name": "punctuation.definition.dictionary.begin.tjson"
+						},
+						"2": {
+							"name": "punctuation.definition.dictionary.end.tjson"
+						}
+					}
+				},
+				{
+					"include": "#minimal-json"
+				}
+			]
+		},
+		"minimal-json": {
+			"comment": "MINIMAL JSON: a whole JSON value written with no whitespace outside its strings, embedded in a single TJSON line. It is the one place in the format where JSON punctuation is punctuation -- everywhere else a bracket is either a container marker or ordinary text inside a bare string -- so the interior is scoped as JSON rather than as TJSON. Every bracket carries the same scope, outermost and nested alike: the fragment is atomic to TJSON, which never reads inside it, so there is nothing a separate boundary scope would distinguish. 'end' accepts end of line as well as a closing bracket because MINIMAL JSON cannot be wrapped or folded -- a fragment that never closes is an error, and stopping at the line keeps that error from swallowing the rest of the document.",
+			"begin": "[\\[{]",
+			"end": "[\\]}]|$",
+			"name": "meta.embedded.minimal-json.tjson",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.section.embedded.tjson"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.section.embedded.tjson"
+				}
+			},
+			"patterns": [
+				{
+					"comment": "Nesting. A bracket reaching here opens a container rather than closing this one: 'end' is tried first, so a closer never gets this far.",
+					"include": "#minimal-json"
+				},
+				{
+					"include": "#minimal-json-key"
+				},
+				{
+					"comment": "Any string the key rule did not claim is a value. Reusing the TJSON rule is deliberate -- a JSON string is a JSON string, and that rule already carries the escape patterns.",
+					"include": "#json-strings"
+				},
+				{
+					"include": "#scalar-atoms"
+				},
+				{
+					"comment": "A colon outside a string can only separate a key from its value, so it is named for that. A comma separates either two array elements or two object pairs, and which one depends on the enclosing bracket, which this rule cannot see -- so it is named for what is known rather than for a guess.",
+					"match": ":",
+					"name": "punctuation.separator.key-value.tjson"
+				},
+				{
+					"match": ",",
+					"name": "punctuation.separator.embedded.tjson"
+				}
+			]
+		},
+		"minimal-json-key": {
+			"comment": "A string with a colon after it is an object key, not a value. MINIMAL JSON forbids whitespace outside strings, so the colon is always adjacent; the lookahead tolerates a gap anyway, which keeps keys coloured as keys in a fragment that is still being typed.",
+			"match": "(\")((?:[^\"\\\\]|\\\\.)*)(\")(?=\\s*:)",
+			"captures": {
+				"1": {
+					"name": "punctuation.definition.string.begin.tjson"
+				},
+				"2": {
+					"name": "entity.other.attribute-name.quoted.tjson"
+				},
+				"3": {
+					"name": "punctuation.definition.string.end.tjson"
+				}
+			}
+		},
+		"marker-chain": {
+			"comment": "A nesting marker chain with nothing written after it yet. '[ 1' already scopes its '[ ' as a marker, and the identical '[ ' on a line still being typed took no scope at all, so a chain changed colour the moment its value arrived. Anchored to end of line, so it can only claim a chain that stands alone -- a chain WITH a value on it is matched further up by the rules that scope the value too. Such a line is not valid on its own (the parser wants content after a marker), but a marker is what it is, and saying so is more use than saying nothing.",
+			"match": "^((?:  )*)((?:\\[ |\\{ )+)$",
+			"captures": {
+				"1": {
+					"name": "punctuation.whitespace.indent.tjson"
+				},
+				"2": {
+					"patterns": [
+						{
+							"match": "\\[ ",
+							"name": "keyword.operator.array-marker.tjson"
+						},
+						{
+							"match": "\\{ ",
+							"name": "keyword.operator.object-marker.tjson"
+						}
+					]
+				}
+			}
+		},
+		"multiline-strings": {
+			"comment": "Multiline string with no key — an array element. Same body and same matched-fence rule as the keyed forms.",
+			"begin": "^((?:  )*)((?:\\[ )*)( )(```|``|`)[ ]*$",
+			"end": "^([ ]*)( )(\\4)[ ]*$",
+			"name": "meta.multiline.tjson",
+			"beginCaptures": {
+				"1": {
+					"name": "punctuation.whitespace.indent.tjson"
+				},
+				"2": {
+					"name": "keyword.operator.array-marker.tjson"
+				},
+				"3": {
+					"name": "punctuation.definition.string.begin.tjson"
+				},
+				"4": {
+					"name": "punctuation.definition.string.begin.tjson"
+				}
+			},
+			"endCaptures": {
+				"2": {
+					"name": "punctuation.definition.string.end.tjson"
+				},
+				"3": {
+					"name": "punctuation.definition.string.end.tjson"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#multiline-body"
+				}
+			]
+		},
+		"json-strings": {
+			"begin": "\"",
+			"end": "\"",
+			"contentName": "string.quoted.double.tjson",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.begin.tjson"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.end.tjson"
+				}
+			},
+			"patterns": [
+				{
+					"comment": "Fold marker on a continuation line of a folded quoted string",
+					"match": "^([ ]*)(/ )",
+					"captures": {
+						"2": {
+							"name": "punctuation.definition.fold-marker.tjson"
+						}
+					}
+				},
+				{
+					"match": "\\\\[\"\\\\/bfnrt]",
+					"name": "constant.character.escape.tjson"
+				},
+				{
+					"match": "\\\\u[0-9A-Fa-f]{4}",
+					"name": "constant.character.escape.tjson"
+				}
+			]
+		},
+		"multiline-body": {
+			"comment": "Body lines of a multiline string. Raw means raw: nothing here may be reinterpreted as TJSON. The only structure recognised is generator framing — the '| ' margin of the pipe-margin (``) form, and the '/ ' fold marker that replaces it on folded lines (tjson --fold-multiline). Both require their trailing space, which is what keeps '//' and '/usr/bin/env' as ordinary content.",
+			"patterns": [
+				{
+					"comment": "Pipe-margin content line",
+					"match": "^([ ]*)(\\| ?)(.*)$",
+					"captures": {
+						"2": {
+							"name": "punctuation.definition.string.multiline-margin.tjson"
+						},
+						"3": {
+							"name": "markup.raw.block.tjson"
+						}
+					}
+				},
+				{
+					"comment": "Folded content line — the marker's space is mandatory",
+					"match": "^([ ]*)(/ )(.*)$",
+					"captures": {
+						"2": {
+							"name": "punctuation.definition.fold-marker.tjson"
+						},
+						"3": {
+							"name": "markup.raw.block.tjson"
+						}
+					}
+				},
+				{
+					"comment": "Everything else is verbatim, including lines opening with // or /",
+					"match": "^(.+)$",
+					"name": "markup.raw.block.tjson"
+				}
+			]
+		},
+		"object-entry-multiline-quoted": {
+			"comment": "Quoted key whose value is a multiline string. Any key the generator cannot emit bare arrives quoted, so this is as ordinary as the bare-key form.",
+			"begin": "^((?:  )*)((?:\\[ )*)(\\{ )?(\")((?:[^\"\\\\]|\\\\.)*)(\")(:)( )(```|``|`)$",
+			"end": "^([ ]*)( )(\\9)[ ]*$",
+			"name": "meta.object.entry.multiline.tjson",
+			"beginCaptures": {
+				"1": {
+					"name": "punctuation.whitespace.indent.tjson"
+				},
+				"2": {
+					"name": "keyword.operator.array-marker.tjson"
+				},
+				"3": {
+					"name": "keyword.operator.object-marker.tjson"
+				},
+				"4": {
+					"name": "punctuation.definition.string.begin.tjson"
+				},
+				"5": {
+					"name": "entity.other.attribute-name.quoted.tjson"
+				},
+				"6": {
+					"name": "punctuation.definition.string.end.tjson"
+				},
+				"7": {
+					"name": "punctuation.separator.key-value.tjson"
+				},
+				"8": {
+					"name": "punctuation.definition.string.begin.tjson"
+				},
+				"9": {
+					"name": "punctuation.definition.string.begin.tjson"
+				}
+			},
+			"endCaptures": {
+				"2": {
+					"name": "punctuation.definition.string.end.tjson"
+				},
+				"3": {
+					"name": "punctuation.definition.string.end.tjson"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#multiline-body"
+				}
+			]
+		},
+		"scalar-atoms": {
+			"comment": "The three scalar shapes, for use from captures.",
+			"patterns": [
+				{
+					"match": "(?:true|false)\\b",
+					"name": "constant.language.boolean.tjson"
+				},
+				{
+					"match": "null\\b",
+					"name": "constant.language.null.tjson"
+				},
+				{
+					"match": "-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b",
+					"name": "constant.numeric.tjson"
+				}
+			]
+		},
+		"array-elements": {
+			"comment": "Elements after the first in an inline array. Two packed forms reach here. In Type 2 the separator is ', ' and every element is a scalar or a quoted string. There is no bare element: a bare string may contain commas, and a content comma could not be told from a separator, so spec v0.5.0 admits none in a comma-packed array at all. A bare element belongs in Type 3. In Type 3 the separator is '  ' and every element is a string, so a bare one shows three spaces before it — two of separator and one of its own quote. The comma patterns come first, so at a ',' Type 2 always wins; the Type 3 patterns only see a gap that no comma introduced, which is exactly the spec's rule for telling the forms apart. Type 3 elements may contain commas, since a comma is not a separator in that form, so their content stops only at '  ' or end of line.",
+			"patterns": [
+				{
+					"comment": "Scalar element — separator only, no quote space",
+					"match": "(,)( )((?:(?:true|false|null)\\b|-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b))",
+					"captures": {
+						"1": {
+							"name": "punctuation.separator.array.tjson"
+						},
+						"3": {
+							"patterns": [
+								{
+									"include": "#scalar-atoms"
+								}
+							]
+						}
+					}
+				},
+				{
+					"comment": "Separator before a quoted element. Requires the quote: without it this matched any ', ' at all, including one sitting inside a Type 3 bare element, and scoped it as a separator.",
+					"match": "(,)(?= \")",
+					"name": "punctuation.separator.array.tjson"
+				},
+				{
+					"comment": "Type 3 bare element — two spaces of separator, then the element's own one-sided opening quote. Commas are ordinary content here.",
+					"match": "(  )([ _])((?:[^\\p{Quotation_Mark}`/|, _\\[\\]{}❲❳⟦⟧⦋⦌【】〚〛［］❴❵｛｝](?:(?!  )[^\\n])*?[^\\p{Quotation_Mark}`|,\\s\\[\\]{}❲❳⟦⟧⦋⦌【】〚〛［］❴❵｛｝]|[^\\p{Quotation_Mark}`/|,\\s_\\[\\]{}❲❳⟦⟧⦋⦌【】〚〛［］❴❵｛｝])(?=  | *$))",
+					"name": "meta.bare-string.tjson",
+					"captures": {
+						"1": {
+							"name": "punctuation.separator.array.tjson"
+						},
+						"2": {
+							"name": "punctuation.definition.string.begin.bare.tjson"
+						},
+						"3": {
+							"name": "string.unquoted.bare.tjson"
+						}
+					}
+				},
+				{
+					"comment": "Type 3 separator before a quoted element — no quote space, the '\"' is the delimiter",
+					"match": "(  )(?=\")",
+					"captures": {
+						"1": {
+							"name": "punctuation.separator.array.tjson"
+						}
+					}
+				},
+				{
+					"include": "#json-strings"
+				}
+			]
+		},
+		"inline-entries-quoted": {
+			"comment": "Continuation entry on the same line whose key is quoted. Without this the key is indistinguishable from a string value: #json-strings would match it at the quote, and the gap before it would go unclaimed.",
+			"begin": "((?:  )+)(\")((?:[^\"\\\\]|\\\\.)*)(\")(:)",
+			"end": "(?=  |$)",
+			"name": "meta.object.entry.inline.tjson",
+			"beginCaptures": {
+				"1": {
+					"name": "punctuation.separator.inline.tjson"
+				},
+				"2": {
+					"name": "punctuation.definition.string.begin.tjson"
+				},
+				"3": {
+					"name": "entity.other.attribute-name.quoted.tjson"
+				},
+				"4": {
+					"name": "punctuation.definition.string.end.tjson"
+				},
+				"5": {
+					"name": "punctuation.separator.key-value.tjson"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#inline-value"
+				}
+			]
+		},
+		"folded-keys": {
+			"comment": "Folded key: a key long enough to run out of line before its colon continues on '/ ' lines, and the colon lands there. Begin matches an even-indented identifier line with no colon on it. This runs after #scalar-values on purpose: a packed array line like '  1, 2.5, -3' is also even-indented with no colon, and the key character class contains ',', '.', '-' and space, so the two shapes are not separable by a pattern alone -- letting the array rules refuse the line first is what tells them apart. The lookaheads then cover a lone scalar, which no array rule claims. Everything else at an even column is already distinguishable: a bare string value carries its one-sided opening quote and so sits at an odd column, a finished key has its colon, comments open '//', table rows '|', fold continuations '/', fences a backtick. End is the colon wherever it finally appears, and it takes the rest of that line with it so the value is scoped by the ordinary value rules.",
+			"begin": "^((?:  )*)(?!(?:true|false|null)\\b[ ]*$)(?!-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?[ ]*$)([\\p{L}\\p{N}][\\p{L}\\p{N}_()/'.!%&, -]*)$",
+			"end": "(:)(.*)$",
+			"name": "meta.object.entry.folded-key.tjson",
+			"beginCaptures": {
+				"1": {
+					"name": "punctuation.whitespace.indent.tjson"
+				},
+				"2": {
+					"name": "entity.other.attribute-name.bare.tjson"
+				}
+			},
+			"endCaptures": {
+				"1": {
+					"name": "punctuation.separator.key-value.tjson"
+				},
+				"2": {
+					"patterns": [
+						{
+							"include": "#inline-value"
+						}
+					]
+				}
+			},
+			"patterns": [
+				{
+					"comment": "Fold marker introducing the next piece of the key",
+					"match": "^((?:  )*)(/ )( ?)",
+					"captures": {
+						"1": {
+							"name": "punctuation.whitespace.indent.tjson"
+						},
+						"2": {
+							"name": "punctuation.definition.fold-marker.tjson"
+						}
+					}
+				},
+				{
+					"comment": "The continuing key text",
+					"match": "[^:\\n]+",
+					"name": "entity.other.attribute-name.bare.tjson"
+				}
+			]
+		}
+	}
+}

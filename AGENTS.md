@@ -32,11 +32,11 @@ This repo is a **static FHIR Bundle browser**. It is not VistA, not `%wd`, not `
 
 ## Job 2 — Change the browser UI
 
-**Edit only:** `web/index.html`, `web/app.js`, `web/style.css`.
+**Edit only:** `web/index.html`, `web/app.js`, `web/style.css`, `web/tjson-highlight.js`.
 
-Optional: `examples/*`, docs under `docs/`, `README.md`.
+Optional: `examples/*`, docs under `docs/`, `README.md`, `vendor/tjson-highlight/` (grammar / scopes / onig.wasm from rfanth/tjson-highlight).
 
-**Do not** change vendored wasm except via Job 1.
+**Do not** change vendored tjson wasm except via Job 1.
 
 ```bash
 ./scripts/smoke-browser.sh

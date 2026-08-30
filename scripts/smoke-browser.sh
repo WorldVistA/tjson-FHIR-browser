@@ -13,8 +13,12 @@ echo "==> smoke-browser ($ROOT)"
 [[ -f web/index.html ]] && pass "web/index.html" || bad "missing web/index.html"
 [[ -f web/app.js ]] && pass "web/app.js" || bad "missing web/app.js"
 [[ -f web/style.css ]] && pass "web/style.css" || bad "missing web/style.css"
+[[ -f web/tjson-highlight.js ]] && pass "web/tjson-highlight.js" || bad "missing tjson-highlight.js"
 [[ -f vendor/tjson/web/index.js ]] && pass "vendor/tjson/web/index.js" || bad "missing vendored tjson"
 [[ -f vendor/tjson/VERSION ]] && pass "vendor/tjson/VERSION" || bad "missing VERSION"
+[[ -f vendor/tjson-highlight/tjson.tmLanguage.json ]] && pass "vendor/tjson-highlight grammar" || bad "missing tjson.tmLanguage.json"
+[[ -f vendor/tjson-highlight/scope-classes.json ]] && pass "vendor/tjson-highlight scopes" || bad "missing scope-classes.json"
+[[ -f vendor/tjson-highlight/onig.wasm ]] && pass "vendor/tjson-highlight onig.wasm" || bad "missing onig.wasm"
 [[ -f examples/sample-bundle.json ]] && pass "examples/sample-bundle.json" || bad "missing example"
 
 VER="$(tr -d '[:space:]' < vendor/tjson/VERSION)"
@@ -25,6 +29,8 @@ else
 fi
 
 grep -q "fromJson" web/app.js && pass "app.js uses fromJson" || bad "app.js missing fromJson"
+grep -q "highlightTjson\|tjson-highlight.js" web/app.js && pass "app.js loads client TJSON highlight" || bad "app.js missing highlight import"
+grep -q "tjson-hl" web/style.css && pass "style.css has tjson-hl palette" || bad "style.css missing tjson-hl"
 grep -q "btnLoadUrl" web/index.html && pass "URL loader control" || bad "missing URL loader"
 grep -q "fileInput" web/index.html && pass "file loader control" || bad "missing file loader"
 grep -q "pasteInput" web/index.html && pass "paste loader control" || bad "missing paste loader"

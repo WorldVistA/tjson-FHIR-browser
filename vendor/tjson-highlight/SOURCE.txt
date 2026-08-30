@@ -1,0 +1,8 @@
+Vendored from https://github.com/rfanth/tjson-highlight for client-side web highlighting.
+
+- tjson.tmLanguage.json — TextMate grammar
+- scope-classes.json — scope → CSS class map (docs/scope-classes.json)
+- onig.wasm — from vscode-oniguruma@2.0.1
+
+Tokenizer JS loads lazily from esm.sh (vscode-textmate@9, vscode-oniguruma@2).
+See upstream docs/web-highlighting.md.

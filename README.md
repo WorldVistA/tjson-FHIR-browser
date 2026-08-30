@@ -29,7 +29,7 @@ A single resource is wrapped as a one-entry Bundle automatically.
 ## Features
 
 - Left list: search, resource-type filter, DiagnosticReport nesting
-- Right pane: **TJSON** (default) / **JSON** toggle
+- Right pane: **TJSON** (default, syntax-highlighted) / **JSON** toggle
 - DocumentReference / DiagnosticReport `text/plain` base64 decoded for readable TJSON (`prepareForTjson`)
 - Dark / light theme
 - Agent-friendly upgrade path: `./scripts/update-vendored-tjson.sh <version>`
