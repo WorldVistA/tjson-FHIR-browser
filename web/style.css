@@ -368,6 +368,7 @@ body.theme-dark pre.tjson-hl .tjson-marker { color: #3d4656; }
 body.theme-dark pre.tjson-hl .tjson-escape { color: #c9a8b4; }
 body.theme-dark pre.tjson-hl .tjson-multiline { color: #f2eee6; }
 body.theme-dark pre.tjson-hl .tjson-comment { color: #6b778a; font-style: italic; }
+body.theme-dark pre.tjson-hl .tjson-invalid { color: #e8a0a8; font-style: italic; }
 
 body.theme-light pre.tjson-hl .tjson-key { color: #1e3a5f; }
 body.theme-light pre.tjson-hl .tjson-bare { color: #0f1f14; }
@@ -381,6 +382,7 @@ body.theme-light pre.tjson-hl .tjson-marker { color: #cbd5e1; }
 body.theme-light pre.tjson-hl .tjson-escape { color: #7f1d3a; }
 body.theme-light pre.tjson-hl .tjson-multiline { color: #1c1917; }
 body.theme-light pre.tjson-hl .tjson-comment { color: #64748b; font-style: italic; }
+body.theme-light pre.tjson-hl .tjson-invalid { color: #9f1239; font-style: italic; }
 
 /* Off = normal text color; leave span HTML alone */
 body:has(#chkTjsonHl:not(:checked)) pre.tjson-hl [class^="tjson-"] {

@@ -5,43 +5,10 @@
 	"fileTypes": [
 		"tjson"
 	],
-	"comment": "Bare strings: a bare string opens with a single space and has no closing delimiter — a one-sided quote. That space is the entire type marker: 'k:true' is the boolean, 'k: true' is the string \"true\". The opener may also be written '_' ('k:_true'), which a generator emits only when asked (tjson --bare-strings marked). The two are interchangeable, occupy the same one column, and may be mixed freely within a document or even a line, so every rule that matches an opener matches [ _] and every rule that matches the first character of the CONTENT excludes '_' as well — a bare string may not begin with one, which is what keeps the marker distinguishable from the data it introduces. The content is bounded at BOTH ends, by different sets. The first character may not be a quotelike, a backtick, '/', '|', a comma, a space, '_', or a square or curly bracket. The last may not be a quotelike, a backtick, '|', a comma, any whitespace, or a square or curly bracket -- but '/' and '_' ARE allowed there, because they are barred at the start only for looking like a fold marker, a comment or the type marker, and nothing in final position can be mistaken for those. The brackets are the one exclusion that is identical at both ends and unsided within each end: ']abc' and 'abc[' are refused along with '[abc' and 'abc]', because pairing them up would make the rule turn on what matches what, and a bracket at an edge can connect visually with one facing toward it in an indent marker or another bare string. The lookalike sets are the spec's SQUAREBRACKETLIKE and CURLYBRACKETLIKE, written out here because no Unicode property carves them without also taking parentheses, which bare keys allow. Corner brackets are absent on purpose -- they carry Quotation_Mark and the quotelike exclusion already has them. Interior brackets stay legal: 'a[b' is a bare string, and nothing structural begins mid-value. That asymmetry is why both classes are written out in every content rule instead of one serving twice, and why a one-character bare string needs a third class satisfying both at once. Constraining only the first character, as this once did, let 'k: abc,' and 'k: abc|' render as clean strings when the parser rejects them. One place looks like an opener and is not: after a fold marker. What follows '/ ' is data resuming mid-string, so the space in '/  ccc' is the string's own internal space and an '_' there is a literal underscore — 'k: aaa bbb' folded to '/ _ccc' is \"aaa bbb_ccc\". No marker rule applies on a continuation line. It is therefore scoped as punctuation.definition.string.begin.bare, for the same reason the opening '\"' of a quoted string is scoped punctuation.definition.string.begin: it is syntax introducing content, not content. Keeping it out of string.unquoted.bare means that scope always covers exactly the data. There is deliberately no matching *.end scope. A bare string ends on two spaces or on end of line, and on nothing else. End of line is zero-width and cannot carry a scope at all; the two spaces are already the separator between inline entries or between Type 3 array elements, so they belong to the neighbour rather than to the string. A '|' ends one only where a table is padded below the minimum '  |' — that is precisely why the spec forbids a '|' inside a bare string in a table at all, since the prohibition is what lets an underpadded table parse deterministically. Outside a table 'k: bare | string' is the single string \"bare | string\" and the pipe is ordinary content. A comma never ends one. A bare string may contain commas and commonly does; it simply may not begin or end with one, and as of spec v0.5.0 may not sit in a comma-packed array at all — precisely because a content comma could not be told from a separator. A bare string with commas belongs in a Type 3 array, where two spaces separate and the commas are ordinary content. Line comments have the same one-sided shape and every grammar treats them this way.",
+	"comment": "Bare strings: a bare string opens with a single space and has no closing delimiter — a one-sided quote. That space is the entire type marker: 'k:true' is the boolean, 'k: true' is the string \"true\". The opener may also be written '_' ('k:_true'), which a generator emits only when asked (tjson --bare-strings marked). The two are interchangeable, occupy the same one column, and may be mixed freely within a document or even a line, so every rule that matches an opener matches [ _] and every rule that matches the first character of the CONTENT excludes '_' as well — a bare string may not begin with one, which is what keeps the marker distinguishable from the data it introduces. The content is bounded at BOTH ends, by different sets. The first character may not be a quotelike, a backtick, '/', '|', a comma, a space, '_', or a square or curly bracket. The last may not be a quotelike, a backtick, '|', a comma, any whitespace, or a square or curly bracket -- but '/' and '_' ARE allowed there, because they are barred at the start only for looking like a fold marker, a comment or the type marker, and nothing in final position can be mistaken for those. The brackets are the one exclusion that is identical at both ends and unsided within each end: ']abc' and 'abc[' are refused along with '[abc' and 'abc]', because pairing them up would make the rule turn on what matches what, and a bracket at an edge can connect visually with one facing toward it in an indent marker or another bare string. The lookalike sets are the spec's SQUAREBRACKETLIKE and CURLYBRACKETLIKE, written out here because no Unicode property carves them without also taking parentheses, which bare keys allow. Corner brackets are absent on purpose -- they carry Quotation_Mark and the quotelike exclusion already has them. Interior brackets stay legal: 'a[b' is a bare string, and nothing structural begins mid-value. That asymmetry is why both classes are written out in every content rule instead of one serving twice, and why a one-character bare string needs a third class satisfying both at once. Constraining only the first character, as this once did, let 'k: abc,' and 'k: abc|' render as clean strings when the parser rejects them. One place looks like an opener and is not: after a fold marker. What follows '/ ' is data resuming mid-string, so the space in '/  ccc' is the string's own internal space and an '_' there is a literal underscore — 'k: aaa bbb' folded to '/ _ccc' is \"aaa bbb_ccc\". No marker rule applies on a continuation line -- with one exception, which is why the grammar has to carry the value across the line break rather than read the continuation on its own: where the colon ended the line above, the string has not started yet, and the space after the marker really is its opener. The two are the same character in the same column and only the line above tells them apart. The opener is scoped as punctuation.definition.string.begin.bare, for the same reason the opening '\"' of a quoted string is scoped punctuation.definition.string.begin: it is syntax introducing content, not content. Keeping it out of string.unquoted.bare means that scope always covers exactly the data. There is deliberately no matching *.end scope. A bare string ends on two spaces or on end of line, and on nothing else. End of line is zero-width and cannot carry a scope at all; the two spaces are already the separator between inline entries or between Type 3 array elements, so they belong to the neighbour rather than to the string. A '|' ends one only where a table is padded below the minimum '  |' — that is precisely why the spec forbids a '|' inside a bare string in a table at all, since the prohibition is what lets an underpadded table parse deterministically. Outside a table 'k: bare | string' is the single string \"bare | string\" and the pipe is ordinary content. A comma never ends one. A bare string may contain commas and commonly does; it simply may not begin or end with one, and as of spec v0.5.0 may not sit in a comma-packed array at all — precisely because a content comma could not be told from a separator. A bare string with commas belongs in a Type 3 array, where two spaces separate and the commas are ordinary content. Line comments have the same one-sided shape and every grammar treats them this way.",
 	"patterns": [
 		{
-			"include": "#comments"
-		},
-		{
-			"include": "#indent-glyphs"
-		},
-		{
-			"include": "#marker-chain"
-		},
-		{
-			"include": "#fold-markers"
-		},
-		{
-			"include": "#table-rows"
-		},
-		{
-			"include": "#object-entry-multiline"
-		},
-		{
-			"include": "#object-entry-multiline-quoted"
-		},
-		{
-			"include": "#object-entries-quoted"
-		},
-		{
-			"include": "#object-entries"
-		},
-		{
-			"include": "#scalar-values"
-		},
-		{
-			"include": "#folded-keys"
-		},
-		{
-			"include": "#multiline-strings"
+			"include": "#document-body"
 		}
 	],
 	"repository": {
@@ -49,6 +16,72 @@
 			"comment": "Any number of spaces (not necessarily even) before //",
 			"match": "^ *//.*$",
 			"name": "comment.line.double-slash.tjson"
+		},
+		"indent-glyph-frame": {
+			"comment": "An indent glyph frame. '/<' shifts the visible indent inward and '/>' puts it back, and the two belong together: the closing glyph sits at the indent of the line that opened the frame, with its own leading space outside that indent the way a bare string's opener is. Nothing paired them before -- they were two unrelated single-line matches, so a '/>' at any indent, or one with no '/<' above it at all, highlighted as though it were correct. The begin takes the whole opening line, because the glyph may follow a key ('i: /<') and a rule that consumed only the indent would leave the key for line-anchored rules that can no longer match it. Inside the frame the indent resets, so there is no per-line invariant to test and this is an 'end' rather than a 'while'. The width slots have to admit '{ ' as well as '[ ', because the marker run this rule matches does: an object marker occupies the same two columns, and counting only the array ones left a frame opened by '{ data: /<' looking for its closing glyph two columns to the left of where it was.",
+			"begin": "^((?:  )*)(?=((?:\\[ |\\{ ))?((?:\\[ |\\{ )*))((?:\\[ |\\{ )*)(?:(\")((?:[^\"\\\\]|\\\\.)*)(\")(:)|([\\p{L}\\p{N}&&[^\\p{DI}\\x{2D0}]](?:(?:(?!  )[\\p{L}\\p{N}_()/'.!%&, ;@$#*=?^~<>+-&&[^\\p{DI}\\x{2D0}]])*?[\\p{L}\\p{N}_()/.!%&;@$#*=?^~<>+-&&[^\\p{DI}\\x{2D0}]])?)(:))?( )(/<)[ ]*$",
+			"end": "^\\1(?>\\2|  )(?>\\3|(?:  )*)( )(/>)[ ]*$",
+			"name": "meta.indent-glyph.frame.tjson",
+			"beginCaptures": {
+				"1": {
+					"name": "punctuation.whitespace.indent.tjson"
+				},
+				"4": {
+					"patterns": [
+						{
+							"match": "\\[ ",
+							"name": "keyword.operator.array-marker.tjson"
+						},
+						{
+							"match": "\\{ ",
+							"name": "keyword.operator.object-marker.tjson"
+						}
+					]
+				},
+				"5": {
+					"name": "punctuation.definition.string.begin.tjson"
+				},
+				"6": {
+					"name": "entity.other.attribute-name.quoted.tjson"
+				},
+				"7": {
+					"name": "punctuation.definition.string.end.tjson"
+				},
+				"8": {
+					"name": "punctuation.separator.key-value.tjson"
+				},
+				"9": {
+					"name": "entity.other.attribute-name.bare.tjson"
+				},
+				"10": {
+					"name": "punctuation.separator.key-value.tjson"
+				},
+				"12": {
+					"name": "keyword.control.indent-adjustment.tjson"
+				}
+			},
+			"endCaptures": {
+				"2": {
+					"name": "keyword.control.indent-adjustment.tjson"
+				}
+			},
+			"patterns": [
+				{
+					"comment": "A closing glyph that is not at the frame's indent. 'end' is tried first, so anything reaching here is at the wrong column -- and claiming it matters: left to fall through it would be read as a perfectly ordinary glyph line by the rule outside. The fault goes on the glyph rather than on the indent in front of it, which is the convention every theme is written for: `invalid` is styled as a foreground colour and an italic, never a background, so on whitespace it renders as nothing at all. YAML does the same thing with the same reasoning -- its `invalid.illegal.expected-indentation` sits on the `-`, `?` or `|` and the spaces beside it stay ordinary indentation. The marker is what is in the wrong place; the whitespace is only how it got there.",
+					"match": "^([ ]*)( )(/>)[ ]*$",
+					"captures": {
+						"1": {
+							"name": "punctuation.whitespace.indent.tjson"
+						},
+						"3": {
+							"name": "invalid.illegal.indent-glyph-column.tjson"
+						}
+					}
+				},
+				{
+					"include": "$self"
+				}
+			]
 		},
 		"indent-glyphs": {
 			"comment": "A /< or /> alone on a line — even indent + any nesting markers + mandatory bare-string separator space + glyph. The markers matter: a generator shifting the frame at the very start of a document writes '[  /<', the array marker and the glyph together, and with the marker chain omitted here that line matched nothing at all — not the marker, not the glyph, the whole line unscoped, while the '/>' closing it three lines down highlighted correctly. Every other content rule in this grammar already carries '((?:  )*)((?:\\[ )*)' for exactly this reason; a glyph is one more thing that can follow a marker, and it was the one form the list left out.",
@@ -76,11 +109,31 @@
 			}
 		},
 		"fold-markers": {
-			"comment": "Fold continuation line: even indent, then '/ ', then the rest of the value. What follows the marker is only a string when the value being folded is one, and the format says which: a folded BARE string repeats its one-sided opening quote after the marker, so it alone is preceded by a second space. Everything else -- numbers, quoted strings, keys -- continues directly. A single rule scoping all of them string.unquoted painted the tail of a folded number as a string, so a number that fits on one line and the same number folded were different colours.",
+			"comment": "A fold continuation line that reached the top level, which means nothing above it claimed the line. That is broken input: a fold marker has to continue a value, and every value that can be folded now carries its own continuations, because what follows '/ ' cannot be read from the continuation line alone -- '/ 8' is a number's tail, a quoted string's, a bare string's or a multiline body's, and the four look identical. Guessing between them from the shape of the line is what this rule used to do, and it painted the tail of a folded bare string as a number. So the marker is named and nothing else is. A fold marker also has a column, and it is not free: the specification puts it in the last two columns of the folded value's own indent, so a '/' anywhere else is continuing something that is not above it and the parser says so. Every rule that carries a fold across a line break therefore checks the column with a back-reference to the indent it opened at. The continuation line carries spaces where the opening line carried markers, so a back-reference has no marker text to match -- the width has to be reconstructed instead. Each slot is written '(?>\\N|  )': the text that was there, or the two spaces standing in for it. The atomic group is the whole trick. Without it an absent slot matches empty, then backtracks into the two-space branch when the rest fails, and a marker two columns too far right is quietly accepted; atomic commits to the first branch that matches and the wrong column is refused. There are four slots for array markers, one for the object marker, and one -- the overflow -- for a chain deeper than four, which cannot be counted and falls back to '(?:  )*'. Four is a measured number, not a guess: across the fixtures and the external corpus, 57 of the 60 lines carrying a marker chain are four cells or shorter, so four slots make the test exact for 95% of them where one slot made it exact for 43%. The rest -- chains of six, nine and twenty cells, one line each -- keep the old even-width leniency, and no fixed slot count can do better, since a chain has no bound. The overflow is written LAST of the three, and that ordering is load-bearing: it is greedy and atomic, so anywhere it sits ahead of a fixed slot it swallows that slot's two columns and, being atomic, cannot give them back. With the overflow in the middle, a construct opened behind '[ [ { ' never matched its own closing line at all -- a minimal multiline there ran to end of file and painted the rest of the document as its body. Reordering is free because every slot matches plain spaces on a continuation line; only the sum of the widths is under test. The test is exact for every shape with at most four array markers and merely even beyond that, which only a very deeply nested document produces.",
 			"patterns": [
 				{
-					"comment": "Bare string continuation: the second space is its opening quote again.",
-					"match": "^((?:  )*)(/ )( )(.*)$",
+					"include": "#fold-marker"
+				}
+			]
+		},
+		"fold-marker": {
+			"comment": "The fold marker by itself. Used where the enclosing rule knows a fold continues but cannot claim what follows it -- a malformed continuation, or one whose value the grammar does not model. Saying '/ ' is a marker is always true; saying what comes after it is not, so nothing else is said.",
+			"match": "^((?:  )*)(/ )",
+			"name": "meta.fold.continuation.tjson",
+			"captures": {
+				"1": {
+					"name": "punctuation.whitespace.indent.tjson"
+				},
+				"2": {
+					"name": "punctuation.definition.fold-marker.tjson"
+				}
+			}
+		},
+		"fold-continuation-bare": {
+			"comment": "A line continuing a bare string. Everything after the marker is the string's own data, the leading space included: 'k: aaa bbb' folded to '/ _ccc' is \"aaa bbb_ccc\", so no opener rule applies here and an '_' is a literal underscore. Content stops at two spaces because a bare string cannot contain them -- the parser refuses such a line, and leaving the tail unpainted says so rather than painting the whole line as one string.",
+			"patterns": [
+				{
+					"match": "^((?:  )*)(/ )((?:(?!  )[^\\n])+)$",
 					"name": "meta.fold.continuation.tjson",
 					"captures": {
 						"1": {
@@ -90,16 +143,20 @@
 							"name": "punctuation.definition.fold-marker.tjson"
 						},
 						"3": {
-							"name": "punctuation.definition.string.begin.bare.tjson"
-						},
-						"4": {
-							"name": "string.unquoted.fold-continuation.tjson"
+							"name": "string.unquoted.bare.tjson"
 						}
 					}
 				},
 				{
-					"comment": "Number continuation: only digits and the exponent/sign characters a split number can begin with, so nothing else can claim this scope.",
-					"match": "^((?:  )*)(/ )([0-9][0-9]*|[.eE+-][0-9+-]*[0-9]*)$",
+					"include": "#fold-marker"
+				}
+			]
+		},
+		"fold-continuation-number": {
+			"comment": "A line continuing a number. The tail may open at the exponent, at the decimal point, or at the exponent's sign, and a fold right after the leading '-' leaves the whole number here. Anything that is not a number's tail is left unpainted: the rule above it saw a number, so a continuation that cannot be one is broken input, not a string.",
+			"patterns": [
+				{
+					"match": "^((?:  )*)(/ )((?=[0-9.eE+-])[+-]?[0-9]*(?:\\.[0-9]*)?(?:[eE][+-]?[0-9]*)?)$",
 					"name": "meta.fold.continuation.tjson",
 					"captures": {
 						"1": {
@@ -114,8 +171,137 @@
 					}
 				},
 				{
-					"comment": "Anything else -- a quoted string or a key continuing. Which of the two cannot be told from this line alone, and a grammar has no memory of the line above, so the content carries no scope of its own rather than a guessed one. The marker is still marked.",
-					"match": "^((?:  )*)(/ )(.*)$",
+					"include": "#fold-marker"
+				}
+			]
+		},
+		"fold-continuation-key": {
+			"comment": "A line continuing an object key. The key text runs up to the colon, wherever on the line it finally lands; the colon and whatever follows it are left to the sibling rules, because at that point the key is over and a value has begun.",
+			"match": "^((?:  )*)(/ )([^:\\n]*)",
+			"name": "meta.fold.continuation.tjson",
+			"captures": {
+				"1": {
+					"name": "punctuation.whitespace.indent.tjson"
+				},
+				"2": {
+					"name": "punctuation.definition.fold-marker.tjson"
+				},
+				"3": {
+					"name": "entity.other.attribute-name.bare.tjson"
+				}
+			}
+		},
+		"fold-opening-value": {
+			"comment": "A value whose first character lands on a fold continuation line, because the colon that introduces it ended the line above. The spacing rule is the one that applies after a colon, with the marker standing in for it: gap 0 is a scalar or a bracket, gap 1 is a bare string or a multiline fence. Each rule carries the marker itself, so none of them can match anywhere but at the head of a continuation line.",
+			"patterns": [
+				{
+					"comment": "Multiline string opening after the marker. The specification lets the opening glyph stand in for a basic value at the junction between a key and its value, so a fence can land here.",
+					"begin": "^((?:  )*)(/ )( )(```|``|`)(\\\\n|\\\\r\\\\n)?[ ]*$",
+					"end": "^([ ]*)( )(\\4)(\\5)[ ]*$",
+					"name": "meta.multiline.tjson",
+					"beginCaptures": {
+						"1": {
+							"name": "punctuation.whitespace.indent.tjson"
+						},
+						"2": {
+							"name": "punctuation.definition.fold-marker.tjson"
+						},
+						"3": {
+							"name": "punctuation.definition.string.begin.tjson"
+						},
+						"4": {
+							"name": "punctuation.definition.string.begin.tjson"
+						},
+						"5": {
+							"name": "constant.character.escape.eol-indicator.tjson"
+						}
+					},
+					"endCaptures": {
+						"2": {
+							"name": "punctuation.definition.string.end.tjson"
+						},
+						"3": {
+							"name": "punctuation.definition.string.end.tjson"
+						},
+						"4": {
+							"name": "constant.character.escape.eol-indicator.tjson"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#multiline-body"
+						}
+					]
+				},
+				{
+					"comment": "Bare string opening after the marker: the space is the one-sided opening quote, exactly as it is after a colon.",
+					"begin": "^((?:  )*)(/ )([ _])((?:[^\\p{Quotation_Mark}`/|, _\\[\\]{}❲❳⟦⟧⦋⦌【】〚〛［］❴❵｛｝](?:(?!  )[^\\n])*?[^\\p{Quotation_Mark}`|,\\s\\[\\]{}❲❳⟦⟧⦋⦌【】〚〛［］❴❵｛｝]|[^\\p{Quotation_Mark}`/|,\\s_\\[\\]{}❲❳⟦⟧⦋⦌【】〚〛［］❴❵｛｝]))(?= *$)",
+					"end": "^(?!\\1/ )",
+					"name": "meta.bare-string.tjson",
+					"beginCaptures": {
+						"1": {
+							"name": "punctuation.whitespace.indent.tjson"
+						},
+						"2": {
+							"name": "punctuation.definition.fold-marker.tjson"
+						},
+						"3": {
+							"name": "punctuation.definition.string.begin.bare.tjson"
+						},
+						"4": {
+							"name": "string.unquoted.bare.tjson"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#fold-continuation-bare"
+						}
+					]
+				},
+				{
+					"comment": "Number opening after the marker, and possibly folding again on the line below.",
+					"begin": "^((?:  )*)(/ )((?:-?[0-9]+(?:\\.[0-9]*)?(?:[eE][+-]?[0-9]*)?|-))(?= *$)",
+					"end": "^(?!\\1/ )",
+					"beginCaptures": {
+						"1": {
+							"name": "punctuation.whitespace.indent.tjson"
+						},
+						"2": {
+							"name": "punctuation.definition.fold-marker.tjson"
+						},
+						"3": {
+							"name": "constant.numeric.tjson"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#fold-continuation-number"
+						}
+					]
+				},
+				{
+					"comment": "true, false and null cannot be folded, so one that opens here also finishes here.",
+					"match": "^((?:  )*)(/ )((?:true|false|null)\\b)[ ]*$",
+					"name": "meta.fold.continuation.tjson",
+					"captures": {
+						"1": {
+							"name": "punctuation.whitespace.indent.tjson"
+						},
+						"2": {
+							"name": "punctuation.definition.fold-marker.tjson"
+						},
+						"3": {
+							"patterns": [
+								{
+									"include": "#scalar-atoms"
+								}
+							]
+						}
+					}
+				},
+				{
+					"comment": "A quoted string or a bracket opening after the marker. The marker is taken here and the value itself by the rules below, which already know both shapes -- a quoted string carries its own fold handling, and neither empty container nor MINIMAL JSON can be folded at all.",
+					"match": "^((?:  )*)(/ )(?=[\"\\[{])",
 					"name": "meta.fold.continuation.tjson",
 					"captures": {
 						"1": {
@@ -125,20 +311,85 @@
 							"name": "punctuation.definition.fold-marker.tjson"
 						}
 					}
+				},
+				{
+					"include": "#json-strings"
+				},
+				{
+					"include": "#bracketed-values"
+				},
+				{
+					"include": "#fold-marker"
+				}
+			]
+		},
+		"fold-pending-value": {
+			"comment": "A colon that ended its line. The value it introduces has not been seen yet -- it opens on the continuation line below -- so this rule exists only to carry that knowledge across the line break. Without it the opener would reach the continuation line with nothing to say which value it opens, and the space in '/  eight' is the one-sided quote of a bare string here while the identical space one line further down is that string's own data.",
+			"begin": "(?<=:)(?= *$)",
+			"end": "^(?!(?:  )*/ )",
+			"patterns": [
+				{
+					"include": "#fold-opening-value"
 				}
 			]
 		},
 		"table-rows": {
-			"comment": "Pipe-table row: tokenize pipes and cell content. Boolean/null/number fire before key so the key pattern only fires on header row identifiers in valid TJSON.",
-			"begin": "^((?:  )*)((?:\\[ )*)(?=\\|)",
-			"end": "$",
-			"name": "meta.table.row.tjson",
+			"comment": "Pipe table. One rule for the whole table rather than one per row, because the rows are not independent: the specification fixes the opening '|' at one column for the whole table and calls a row at any other column an error. The first row sets that column and `while` holds every later row to it -- which is also what ends the table, since the first line that is not a row there fails the test. The width slots rebuild the column the way the fold test does, because a later row carries spaces where the first row carried nesting markers. `while` consumes the indent rather than looking ahead at it, so the cell rules below start at the '|' on every row and do not each have to know where the row began. Boolean/null/number fire before key so the key pattern only fires on header row identifiers in valid TJSON. A row at any other column keeps the table open rather than ending it: left to stop, the rule popped and the stray row promptly opened a table of its own, so the mistake highlighted as though it were fine. Held here, its indent is named for what it is instead.",
+			"begin": "^((?:  )*)(?=(\\[ )?(\\[ )?(\\[ )?(\\[ )?((?:\\[ )*))((?:\\[ )*)((?:\\|[^|\\n]*)*\\|)[ ]*$",
+			"while": "^(\\1(?>\\2|  )(?>\\3|  )(?>\\4|  )(?>\\5|  )(?>\\6|(?:  )*))(?=\\|)|^( *)(\\|)",
+			"name": "meta.table.tjson",
 			"beginCaptures": {
 				"1": {
 					"name": "punctuation.whitespace.indent.tjson"
 				},
+				"7": {
+					"comment": "One token per marker, not one per chain. A marker is one cell of the indent and the cells are what the reader is counting, so a chain of three should be three spans and not one span three cells wide. It also removes a difference that had no reason to exist: a chain with nothing after it yet was already scoped a marker at a time by #marker-chain, so `[ [ ` re-tokenized the moment a value arrived on the line. Same scope either way, so nothing renders differently -- this is for whoever reads the spans.",
+					"patterns": [
+						{
+							"match": "\\[ ",
+							"name": "keyword.operator.array-marker.tjson"
+						}
+					]
+				},
+				"8": {
+					"comment": "The header row, cell by cell. It has to be consumed by `begin` rather than left to the patterns below, because those patterns see every row alike and a header cell and a data cell are spelled the same. A BARE header key was being told apart by a heuristic -- booleans, nulls and numbers are matched first, so a bare identifier left over could only be a header -- and a QUOTED one had no such luck: #json-strings matched it and every quoted header key in the format came out coloured as a string. Row one is the header by definition, so reading it here settles both spellings without guessing.",
+					"patterns": [
+						{
+							"match": "\\|",
+							"name": "punctuation.separator.table.tjson"
+						},
+						{
+							"comment": "A double-quoted header key. Quoted or bare, a header cell is a key. Written as a single match rather than a quote-to-quote region because a capture's patterns do not run begin/end rules -- the region was skipped and the bare-key pattern picked up the text after the opening quote, closing quote and all.",
+							"match": "(\")((?:[^\"\\\\]|\\\\.)*)(\")",
+							"captures": {
+								"1": {
+									"name": "punctuation.definition.string.begin.tjson"
+								},
+								"2": {
+									"name": "entity.other.attribute-name.quoted.tjson"
+								},
+								"3": {
+									"name": "punctuation.definition.string.end.tjson"
+								}
+							}
+						},
+						{
+							"comment": "A bare header key.",
+							"match": "[\\p{L}\\p{N}&&[^\\p{DI}\\x{2D0}]][^|]*?(?=\\s*\\||\\s*$)",
+							"name": "entity.other.attribute-name.bare.tjson"
+						}
+					]
+				}
+			},
+			"whileCaptures": {
+				"1": {
+					"name": "punctuation.whitespace.indent.tjson"
+				},
 				"2": {
-					"name": "keyword.operator.array-marker.tjson"
+					"name": "punctuation.whitespace.indent.tjson"
+				},
+				"3": {
+					"name": "invalid.illegal.table-row-column.tjson"
 				}
 			},
 			"patterns": [
@@ -195,78 +446,42 @@
 				},
 				{
 					"comment": "Key cell (no space, identifier — only occurs on header row in valid TJSON)",
-					"match": "[\\p{L}\\p{N}][^|]*?(?=\\s*\\||\\s*$)",
+					"match": "[\\p{L}\\p{N}&&[^\\p{DI}\\x{2D0}]][^|]*?(?=\\s*\\||\\s*$)",
 					"name": "entity.other.attribute-name.bare.tjson"
-				}
-			]
-		},
-		"object-entry-multiline": {
-			"comment": "Bare key whose value is a multiline string: ` (minimal), `` (pipe-margin), ``` (transparent).",
-			"begin": "^((?:  )*)((?:\\[ )*)(\\{ )?([\\p{L}\\p{N}][\\p{L}\\p{N}_()/'.!%&, -]*?)(:)( )(```|``|`)$",
-			"end": "^([ ]*)( )(\\7)[ ]*$",
-			"name": "meta.object.entry.multiline.tjson",
-			"beginCaptures": {
-				"1": {
-					"name": "punctuation.whitespace.indent.tjson"
-				},
-				"2": {
-					"name": "keyword.operator.array-marker.tjson"
-				},
-				"3": {
-					"name": "keyword.operator.object-marker.tjson"
-				},
-				"4": {
-					"name": "entity.other.attribute-name.bare.tjson"
-				},
-				"5": {
-					"name": "punctuation.separator.key-value.tjson"
-				},
-				"6": {
-					"name": "punctuation.definition.string.begin.tjson"
-				},
-				"7": {
-					"name": "punctuation.definition.string.begin.tjson"
-				}
-			},
-			"endCaptures": {
-				"2": {
-					"name": "punctuation.definition.string.end.tjson"
-				},
-				"3": {
-					"name": "punctuation.definition.string.end.tjson"
-				}
-			},
-			"patterns": [
-				{
-					"include": "#multiline-body"
 				}
 			]
 		},
 		"object-entries-quoted": {
-			"comment": "Double-quoted key: value — key is a JSON string, value handled same as object-entries",
-			"begin": "^((?:  )*)((?:\\[ )*)(\\{ )?(\")((?:[^\"\\\\]|\\\\.)*)(\")(:)",
-			"end": "$",
+			"comment": "Double-quoted key: value — key is a JSON string, value handled same as object-entries Lasts across a folded value exactly as #object-entries does. This is a 'while' rule rather than begin/end because the value it holds can push rules of its own, and a parent's 'end' is never consulted while a child is on the stack -- so the column check would be masked by the very value it is checking. 'while' is tested against the whole stack on every line, so it holds however deep the value goes. See #fold-markers for the column rule itself. The column test spells the opening line's prefix out slot by slot: each '(?>\\N|  )' is the text this line carried there or the two spaces a continuation carries in its place, and the atomic group is what makes it exact rather than merely even -- without it an absent slot backtracks into the two-space branch and accepts a marker two columns too far right. The overflow slot holds a marker chain deeper than the dedicated ones and falls back to '(?:  )*' there, so a deeply nested line keeps the old leniency instead of breaking.",
+			"begin": "^((?:  )*)(?=(\\[ )?(\\[ )?(\\[ )?(\\[ )?((?:\\[ )*))((?:\\[ )*)(\\{ )?(\")((?:[^\"\\\\]|\\\\.)*)(\")(:)",
+			"while": "^(?=\\1(?>\\2|  )(?>\\3|  )(?>\\4|  )(?>\\5|  )(?>\\8|  )(?>\\6|(?:  )*)/ )",
 			"name": "meta.object.entry.tjson",
 			"beginCaptures": {
 				"1": {
 					"name": "punctuation.whitespace.indent.tjson"
 				},
-				"2": {
-					"name": "keyword.operator.array-marker.tjson"
+				"7": {
+					"comment": "One token per marker, not one per chain. A marker is one cell of the indent and the cells are what the reader is counting, so a chain of three should be three spans and not one span three cells wide. It also removes a difference that had no reason to exist: a chain with nothing after it yet was already scoped a marker at a time by #marker-chain, so `[ [ ` re-tokenized the moment a value arrived on the line. Same scope either way, so nothing renders differently -- this is for whoever reads the spans.",
+					"patterns": [
+						{
+							"match": "\\[ ",
+							"name": "keyword.operator.array-marker.tjson"
+						}
+					]
 				},
-				"3": {
+				"8": {
 					"name": "keyword.operator.object-marker.tjson"
 				},
-				"4": {
+				"9": {
 					"name": "punctuation.definition.string.begin.tjson"
 				},
-				"5": {
+				"10": {
 					"name": "entity.other.attribute-name.quoted.tjson"
 				},
-				"6": {
+				"11": {
 					"name": "punctuation.definition.string.end.tjson"
 				},
-				"7": {
+				"12": {
 					"name": "punctuation.separator.key-value.tjson"
 				}
 			},
@@ -279,28 +494,175 @@
 				},
 				{
 					"include": "#inline-entries"
+				},
+				{
+					"include": "#fold-marker"
+				}
+			]
+		},
+		"json-quoted-key": {
+			"comment": "A double-quoted object key that runs over fold lines. Identical to #json-strings except for what the content is called, which is the whole point: this rule is only ever reached where a '{ ' marker has already proved a key is what follows, so the text can be named one.",
+			"begin": "\"",
+			"end": "\"",
+			"contentName": "entity.other.attribute-name.quoted.tjson",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.begin.tjson"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.end.tjson"
+				}
+			},
+			"patterns": [
+				{
+					"comment": "Fold marker on a continuation line. The indent is named because the string's contentName covers this line too, and the leading spaces are not the string's data -- they are the indent the marker sits at the end of.",
+					"match": "^([ ]*)(/ )",
+					"captures": {
+						"1": {
+							"name": "punctuation.whitespace.indent.tjson"
+						},
+						"2": {
+							"name": "punctuation.definition.fold-marker.tjson"
+						}
+					}
+				},
+				{
+					"match": "\\\\[\"\\\\/bfnrt]",
+					"name": "constant.character.escape.tjson"
+				},
+				{
+					"match": "\\\\u[0-9A-Fa-f]{4}",
+					"name": "constant.character.escape.tjson"
+				}
+			]
+		},
+		"folded-quoted-key": {
+			"comment": "A folded double-quoted string that a '{ ' marker has already settled. The marker opens an object, and the first thing in an object is a key -- so unlike the general case in #folded-quoted, there is nothing to guess here and the text is scoped as a key. The bracket chain in front is allowed and does not weaken it: markers nest, and it is the LAST marker that says what comes next. '[ ' last means an array element, which is a value; '{ ' last means an object, which starts with a key. The generator writes '[ { ' for an object that is an array element, which is where this turns up without anyone asking for it, and --force-markers writes '{ ' everywhere. It does not close the gap: a nested object at its natural indent gets no marker at all, and those keys still reach #folded-quoted undecided. It closes part of it, for free, with certainty. The column test spells the opening line's prefix out slot by slot: each '(?>\\N|  )' is the text this line carried there or the two spaces a continuation carries in its place, and the atomic group is what makes it exact rather than merely even -- without it an absent slot backtracks into the two-space branch and accepts a marker two columns too far right. The overflow slot holds a marker chain deeper than the dedicated ones and falls back to '(?:  )*' there, so a deeply nested line keeps the old leniency instead of breaking.",
+			"begin": "^((?:  )*)(?=(\\[ )?(\\[ )?(\\[ )?(\\[ )?((?:\\[ )*))((?:\\[ )*)(\\{ )(?=\"(?:[^\"\\\\]|\\\\.)*$)",
+			"name": "meta.object.tjson",
+			"beginCaptures": {
+				"1": {
+					"name": "punctuation.whitespace.indent.tjson"
+				},
+				"7": {
+					"comment": "One token per marker, not one per chain. A marker is one cell of the indent and the cells are what the reader is counting, so a chain of three should be three spans and not one span three cells wide. It also removes a difference that had no reason to exist: a chain with nothing after it yet was already scoped a marker at a time by #marker-chain, so `[ [ ` re-tokenized the moment a value arrived on the line. Same scope either way, so nothing renders differently -- this is for whoever reads the spans.",
+					"patterns": [
+						{
+							"match": "\\[ ",
+							"name": "keyword.operator.array-marker.tjson"
+						}
+					]
+				},
+				"8": {
+					"name": "keyword.operator.object-marker.tjson"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#nested-block"
+				},
+				{
+					"include": "#json-quoted-key"
+				},
+				{
+					"comment": "The colon, on whichever continuation line the closing quote landed -- and everything after it, because the value has to be fenced off from the rule that reads the key. #json-quoted-key is a '\"'...'\"' region, so once the key closed and this colon matched, the very next quoted thing on the line matched it again and a value came out coloured as a key: `fk\":\"long\"` gave `long` a key's scope. Opening a region here puts the rest of the line under #inline-value alone. `end` is only tested when this rule is innermost, so a value that opens a region of its own -- a folded string carrying on below -- keeps this one open until it finishes. It uses `while` and not `end`. An `end` is masked while a child region is open, and a value legitimately opens one that outlives its line -- a bare string keeps its region open so it can pick up a fold continuation below -- so `end: $` never fired and this region ate the following line. `while` is tested at the start of each later line instead: a fold continuation keeps it open, and anything else pops it before that line is scoped at all.",
+					"begin": "(?<=\")(:)",
+					"beginCaptures": {
+						"1": {
+							"name": "punctuation.separator.key-value.tjson"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#inline-value"
+						},
+						{
+							"include": "#fold-marker"
+						}
+					],
+					"while": "^(?=[ ]*/ )"
+				},
+				{
+					"include": "#inline-value"
+				},
+				{
+					"include": "#fold-marker"
+				},
+				{
+					"include": "#sibling-folded-key"
+				},
+				{
+					"include": "#document-body"
+				}
+			],
+			"end": "^(?!\\1(?>\\2|  )(?>\\3|  )(?>\\4|  )(?>\\5|  )(?>\\8|  )(?>\\6|(?:  )*))"
+		},
+		"folded-quoted": {
+			"comment": "A double-quoted string at line level that does not close on its own line, which means it is folded. What it is cannot be told from here, once #folded-quoted-key has taken the one shape that can be: a '{ ' marker in front proves a key, and a '[ ' last in the chain proves an array element, which is a value and already scoped as one. What is left is the line that carries no marker at all, and there it never can be told: a folded quoted KEY and a folded quoted string VALUE are the same shape -- both open with '\"' at an even column and run on over '/ ' lines -- and the only thing that separates them is the ':' after the closing quote, which is on a later line. The generator emits both (a key past the wrap width; a root string or a one-per-line array element past it), so guessing would be wrong about half the time with nothing to tell which half. So the string is scoped as a string, which is true either way, and the parts that do become knowable are scoped when they arrive: the colon, and the value after it. The key text keeps string.quoted.double rather than entity.other.attribute-name.quoted even once the colon proves it was a key, because by then it has already been tokenized and a grammar cannot go back. Holding the construct together is still worth it -- before this rule the ':' and the whole value after it carried no scope at all, and the line was claimed by the inline-array rule, which it is not. This is a 'while' rule rather than begin/end because the value it holds can push rules of its own, and a parent's 'end' is never consulted while a child is on the stack -- so the column check would be masked by the very value it is checking. 'while' is tested against the whole stack on every line, so it holds however deep the value goes. See #fold-markers for the column rule itself. The column test spells the opening line's prefix out slot by slot: each '(?>\\N|  )' is the text this line carried there or the two spaces a continuation carries in its place, and the atomic group is what makes it exact rather than merely even -- without it an absent slot backtracks into the two-space branch and accepts a marker two columns too far right. The overflow slot holds a marker chain deeper than the dedicated ones and falls back to '(?:  )*' there, so a deeply nested line keeps the old leniency instead of breaking.",
+			"begin": "^((?:  )*)(?=(\\[ )?(\\[ )?(\\[ )?(\\[ )?((?:\\[ )*))((?:\\[ )*)(?=\"(?:[^\"\\\\]|\\\\.)*$)",
+			"while": "^(?=\\1(?>\\2|  )(?>\\3|  )(?>\\4|  )(?>\\5|  )(?>\\6|(?:  )*)/ )",
+			"beginCaptures": {
+				"1": {
+					"name": "punctuation.whitespace.indent.tjson"
+				},
+				"7": {
+					"comment": "One token per marker, not one per chain. A marker is one cell of the indent and the cells are what the reader is counting, so a chain of three should be three spans and not one span three cells wide. It also removes a difference that had no reason to exist: a chain with nothing after it yet was already scoped a marker at a time by #marker-chain, so `[ [ ` re-tokenized the moment a value arrived on the line. Same scope either way, so nothing renders differently -- this is for whoever reads the spans.",
+					"patterns": [
+						{
+							"match": "\\[ ",
+							"name": "keyword.operator.array-marker.tjson"
+						}
+					]
+				}
+			},
+			"patterns": [
+				{
+					"include": "#json-strings"
+				},
+				{
+					"comment": "The colon that proves the string above was a key, on whichever continuation line the closing quote finally landed.",
+					"match": "(?<=\\\")(:)",
+					"captures": {
+						"1": {
+							"name": "punctuation.separator.key-value.tjson"
+						}
+					}
+				},
+				{
+					"include": "#inline-value"
+				},
+				{
+					"include": "#fold-marker"
 				}
 			]
 		},
 		"object-entries": {
-			"comment": "key: value — begin matches indent+markers+key+colon; patterns handle the value",
-			"begin": "^((?:  )*)((?:\\[ )*)(\\{ )?([\\p{L}\\p{N}][\\p{L}\\p{N}_()/'.!%&, -]*?)(:)",
-			"end": "$",
+			"comment": "key: value — begin matches indent+markers+key+colon; patterns handle the value The entry lasts as long as its value does: a folded value carries it onto the continuation lines below, and it ends at the first line that is not one. This is a 'while' rule rather than begin/end because the value it holds can push rules of its own, and a parent's 'end' is never consulted while a child is on the stack -- so the column check would be masked by the very value it is checking. 'while' is tested against the whole stack on every line, so it holds however deep the value goes. See #fold-markers for the column rule itself. The column test spells the opening line's prefix out slot by slot: each '(?>\\N|  )' is the text this line carried there or the two spaces a continuation carries in its place, and the atomic group is what makes it exact rather than merely even -- without it an absent slot backtracks into the two-space branch and accepts a marker two columns too far right. The overflow slot holds a marker chain deeper than the dedicated ones and falls back to '(?:  )*' there, so a deeply nested line keeps the old leniency instead of breaking.",
+			"begin": "^((?:  )*)(?=(\\[ )?(\\[ )?(\\[ )?(\\[ )?((?:\\[ )*))((?:\\[ )*)(\\{ )?([\\p{L}\\p{N}&&[^\\p{DI}\\x{2D0}]](?:(?:(?!  )[\\p{L}\\p{N}_()/'.!%&, ;@$#*=?^~<>+-&&[^\\p{DI}\\x{2D0}]])*?[\\p{L}\\p{N}_()/.!%&;@$#*=?^~<>+-&&[^\\p{DI}\\x{2D0}]])?)(:)",
+			"while": "^(?=\\1(?>\\2|  )(?>\\3|  )(?>\\4|  )(?>\\5|  )(?>\\8|  )(?>\\6|(?:  )*)/ )",
 			"name": "meta.object.entry.tjson",
 			"beginCaptures": {
 				"1": {
 					"name": "punctuation.whitespace.indent.tjson"
 				},
-				"2": {
-					"name": "keyword.operator.array-marker.tjson"
+				"7": {
+					"comment": "One token per marker, not one per chain. A marker is one cell of the indent and the cells are what the reader is counting, so a chain of three should be three spans and not one span three cells wide. It also removes a difference that had no reason to exist: a chain with nothing after it yet was already scoped a marker at a time by #marker-chain, so `[ [ ` re-tokenized the moment a value arrived on the line. Same scope either way, so nothing renders differently -- this is for whoever reads the spans.",
+					"patterns": [
+						{
+							"match": "\\[ ",
+							"name": "keyword.operator.array-marker.tjson"
+						}
+					]
 				},
-				"3": {
+				"8": {
 					"name": "keyword.operator.object-marker.tjson"
 				},
-				"4": {
+				"9": {
 					"name": "entity.other.attribute-name.bare.tjson"
 				},
-				"5": {
+				"10": {
 					"name": "punctuation.separator.key-value.tjson"
 				}
 			},
@@ -313,6 +675,9 @@
 				},
 				{
 					"include": "#inline-entries"
+				},
+				{
+					"include": "#fold-marker"
 				}
 			]
 		},
@@ -328,12 +693,57 @@
 							"name": "punctuation.whitespace.indent.tjson"
 						},
 						"2": {
-							"name": "keyword.operator.array-marker.tjson"
+							"comment": "One token per marker, not one per chain. A marker is one cell of the indent and the cells are what the reader is counting, so a chain of three should be three spans and not one span three cells wide. It also removes a difference that had no reason to exist: a chain with nothing after it yet was already scoped a marker at a time by #marker-chain, so `[ [ ` re-tokenized the moment a value arrived on the line. Same scope either way, so nothing renders differently -- this is for whoever reads the spans.",
+							"patterns": [
+								{
+									"match": "\\[ ",
+									"name": "keyword.operator.array-marker.tjson"
+								}
+							]
 						}
 					},
 					"patterns": [
 						{
+							"comment": "The separator between packed empty containers, `[], []`. Packing means an array is already open -- there would be nothing to pack otherwise -- and on a line that opens with a bracket that array is the root, or the one a marker just opened. That is why this sits here rather than in #inline-value, which also serves gap 0 after a colon: there `k:[]` is a single value and `k:[], []` is refused by the parser, so the same rule one level up painted illegal input as clean. Every other packed form reaches #array-elements for its separators and this one cannot, because every rule that opens an inline array wants a scalar, a quoted string or a bare string first and an empty container is none of the three. Anchored between a closing bracket and an opening one, so it cannot reach a comma inside MINIMAL JSON -- whose own region owns its content in any case.",
+							"match": "(?<=[\\]\\}])(,)( )(?=[\\[\\{])",
+							"captures": {
+								"1": {
+									"name": "punctuation.separator.array.tjson"
+								}
+							}
+						},
+						{
 							"include": "#inline-value"
+						}
+					]
+				},
+				{
+					"comment": "A line that is a single number and runs to its end, so it may be folded. It comes before the packed-array rule below and takes only the lone case: '  1, 2, 3' has more after the first element and never reaches here, which is right, because folding inside either packed array form is forbidden and a continuation under one is not a continuation of anything. The column test spells the opening line's prefix out slot by slot: each '(?>\\N|  )' is the text this line carried there or the two spaces a continuation carries in its place, and the atomic group is what makes it exact rather than merely even -- without it an absent slot backtracks into the two-space branch and accepts a marker two columns too far right. The overflow slot holds a marker chain deeper than the dedicated ones and falls back to '(?:  )*' there, so a deeply nested line keeps the old leniency instead of breaking.",
+					"begin": "^((?:  )*)(?=(\\[ )?(\\[ )?(\\[ )?(\\[ )?((?:\\[ )*))((?:\\[ )*)(\\{ )?((?:-?[0-9]+(?:\\.[0-9]*)?(?:[eE][+-]?[0-9]*)?|-))(?= *$)",
+					"end": "^(?!\\1(?>\\2|  )(?>\\3|  )(?>\\4|  )(?>\\5|  )(?>\\6|(?:  )*)/ )",
+					"beginCaptures": {
+						"1": {
+							"name": "punctuation.whitespace.indent.tjson"
+						},
+						"7": {
+							"comment": "One token per marker, not one per chain. A marker is one cell of the indent and the cells are what the reader is counting, so a chain of three should be three spans and not one span three cells wide. It also removes a difference that had no reason to exist: a chain with nothing after it yet was already scoped a marker at a time by #marker-chain, so `[ [ ` re-tokenized the moment a value arrived on the line. Same scope either way, so nothing renders differently -- this is for whoever reads the spans.",
+							"patterns": [
+								{
+									"match": "\\[ ",
+									"name": "keyword.operator.array-marker.tjson"
+								}
+							]
+						},
+						"8": {
+							"name": "keyword.operator.object-marker.tjson"
+						},
+						"9": {
+							"name": "constant.numeric.tjson"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#fold-continuation-number"
 						}
 					]
 				},
@@ -347,7 +757,13 @@
 							"name": "punctuation.whitespace.indent.tjson"
 						},
 						"2": {
-							"name": "keyword.operator.array-marker.tjson"
+							"comment": "One token per marker, not one per chain. A marker is one cell of the indent and the cells are what the reader is counting, so a chain of three should be three spans and not one span three cells wide. It also removes a difference that had no reason to exist: a chain with nothing after it yet was already scoped a marker at a time by #marker-chain, so `[ [ ` re-tokenized the moment a value arrived on the line. Same scope either way, so nothing renders differently -- this is for whoever reads the spans.",
+							"patterns": [
+								{
+									"match": "\\[ ",
+									"name": "keyword.operator.array-marker.tjson"
+								}
+							]
 						},
 						"3": {
 							"name": "keyword.operator.object-marker.tjson"
@@ -376,7 +792,13 @@
 							"name": "punctuation.whitespace.indent.tjson"
 						},
 						"2": {
-							"name": "keyword.operator.array-marker.tjson"
+							"comment": "One token per marker, not one per chain. A marker is one cell of the indent and the cells are what the reader is counting, so a chain of three should be three spans and not one span three cells wide. It also removes a difference that had no reason to exist: a chain with nothing after it yet was already scoped a marker at a time by #marker-chain, so `[ [ ` re-tokenized the moment a value arrived on the line. Same scope either way, so nothing renders differently -- this is for whoever reads the spans.",
+							"patterns": [
+								{
+									"match": "\\[ ",
+									"name": "keyword.operator.array-marker.tjson"
+								}
+							]
 						},
 						"3": {
 							"name": "punctuation.definition.string.begin.bare.tjson"
@@ -401,12 +823,49 @@
 							"name": "punctuation.whitespace.indent.tjson"
 						},
 						"2": {
-							"name": "keyword.operator.array-marker.tjson"
+							"comment": "One token per marker, not one per chain. A marker is one cell of the indent and the cells are what the reader is counting, so a chain of three should be three spans and not one span three cells wide. It also removes a difference that had no reason to exist: a chain with nothing after it yet was already scoped a marker at a time by #marker-chain, so `[ [ ` re-tokenized the moment a value arrived on the line. Same scope either way, so nothing renders differently -- this is for whoever reads the spans.",
+							"patterns": [
+								{
+									"match": "\\[ ",
+									"name": "keyword.operator.array-marker.tjson"
+								}
+							]
 						}
 					},
 					"patterns": [
 						{
 							"include": "#array-elements"
+						}
+					]
+				},
+				{
+					"comment": "A line that is a single bare string and runs to its end, so it may be folded. Same split as after a colon: this rule stays open over the continuation lines, and the plain rule below keeps the case that stops at '  ', which cannot fold. The column test spells the opening line's prefix out slot by slot: each '(?>\\N|  )' is the text this line carried there or the two spaces a continuation carries in its place, and the atomic group is what makes it exact rather than merely even -- without it an absent slot backtracks into the two-space branch and accepts a marker two columns too far right. The overflow slot holds a marker chain deeper than the dedicated ones and falls back to '(?:  )*' there, so a deeply nested line keeps the old leniency instead of breaking.",
+					"begin": "^((?:  )*)(?=(\\[ )?(\\[ )?(\\[ )?(\\[ )?((?:\\[ )*))((?:\\[ )*)([ _])((?:[^\\p{Quotation_Mark}`/|, _\\[\\]{}❲❳⟦⟧⦋⦌【】〚〛［］❴❵｛｝](?:(?!  )[^\\n])*?[^\\p{Quotation_Mark}`|,\\s\\[\\]{}❲❳⟦⟧⦋⦌【】〚〛［］❴❵｛｝]|[^\\p{Quotation_Mark}`/|,\\s_\\[\\]{}❲❳⟦⟧⦋⦌【】〚〛［］❴❵｛｝]))(?= *$)",
+					"end": "^(?!\\1(?>\\2|  )(?>\\3|  )(?>\\4|  )(?>\\5|  )(?>\\6|(?:  )*)/ )",
+					"name": "meta.bare-string.tjson",
+					"beginCaptures": {
+						"1": {
+							"name": "punctuation.whitespace.indent.tjson"
+						},
+						"7": {
+							"comment": "One token per marker, not one per chain. A marker is one cell of the indent and the cells are what the reader is counting, so a chain of three should be three spans and not one span three cells wide. It also removes a difference that had no reason to exist: a chain with nothing after it yet was already scoped a marker at a time by #marker-chain, so `[ [ ` re-tokenized the moment a value arrived on the line. Same scope either way, so nothing renders differently -- this is for whoever reads the spans.",
+							"patterns": [
+								{
+									"match": "\\[ ",
+									"name": "keyword.operator.array-marker.tjson"
+								}
+							]
+						},
+						"8": {
+							"name": "punctuation.definition.string.begin.bare.tjson"
+						},
+						"9": {
+							"name": "string.unquoted.bare.tjson"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#fold-continuation-bare"
 						}
 					]
 				},
@@ -419,7 +878,13 @@
 							"name": "punctuation.whitespace.indent.tjson"
 						},
 						"2": {
-							"name": "keyword.operator.array-marker.tjson"
+							"comment": "One token per marker, not one per chain. A marker is one cell of the indent and the cells are what the reader is counting, so a chain of three should be three spans and not one span three cells wide. It also removes a difference that had no reason to exist: a chain with nothing after it yet was already scoped a marker at a time by #marker-chain, so `[ [ ` re-tokenized the moment a value arrived on the line. Same scope either way, so nothing renders differently -- this is for whoever reads the spans.",
+							"patterns": [
+								{
+									"match": "\\[ ",
+									"name": "keyword.operator.array-marker.tjson"
+								}
+							]
 						},
 						"3": {
 							"name": "punctuation.definition.string.begin.bare.tjson"
@@ -432,8 +897,8 @@
 			]
 		},
 		"inline-entries": {
-			"comment": "Continuation key:value pair on the same line. The gap is an even number of spaces, at least two: two spaces is what terminates the preceding bare string, and the generator widens the gap in multiples of two (tjson --kv-pack-multiple, default 2, meaning four spaces). Match the whole run so the separator is one token instead of a scoped tail with unscoped filler in front of it.",
-			"begin": "((?:  )+)([\\p{L}\\p{N}][\\p{L}\\p{N}_()/'.!%&, -]*?)(:)",
+			"comment": "Continuation key:value pair on the same line. The gap is an even number of spaces, at least two: two spaces is what terminates the preceding bare string, and the generator widens the gap in multiples of two (tjson --kv-pack-multiple, default 2, meaning four spaces). Match the whole run so the separator is one token instead of a scoped tail with unscoped filler in front of it. A folded value inside one of these is carried by the enclosing entry, whose 'while' governs when the fold ends, so this rule still ends on its own line.",
+			"begin": "((?:  )+)([\\p{L}\\p{N}&&[^\\p{DI}\\x{2D0}]](?:(?:(?!  )[\\p{L}\\p{N}_()/'.!%&, ;@$#*=?^~<>+-&&[^\\p{DI}\\x{2D0}]])*?[\\p{L}\\p{N}_()/.!%&;@$#*=?^~<>+-&&[^\\p{DI}\\x{2D0}]])?)(:)",
 			"end": "(?=  |$)",
 			"name": "meta.object.entry.inline.tjson",
 			"beginCaptures": {
@@ -473,11 +938,49 @@
 					"include": "#bracketed-values"
 				},
 				{
-					"comment": "Inline array, gap 2, first element a scalar: k:  1, 2, 3. Runs to end of line rather than stopping at '  ', because '  ' is the Type 3 element separator and stopping there would end the array at its own first separator. Nothing else can follow a packed array on the line: key-value packing takes only BASIC TYPES, and a nonempty array is not one.",
-					"begin": "(?<=:)(  )((?:(?:true|false|null)\\b|-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b))",
+					"comment": "Inline array, gap 2, first element an empty container: k:  [], []. The gap is two spaces measured from the colon, not from the indent grid -- unlike every other two-space unit in the format it is not aligned to anything. Two spaces are what says an array opened at all, which is why an empty container may be packed here and not at gap 0: `k:[]` is one empty array and nothing may follow it.",
+					"begin": "(?<=:)(  |\\[ )(\\[\\]|\\{\\})",
 					"end": "$",
 					"name": "meta.array.inline.tjson",
 					"beginCaptures": {
+						"1": {
+							"patterns": [
+								{
+									"comment": "The gap is a two-column cell, so it may be a marker. Plain spaces get no scope, as they never did.",
+									"match": "\\[ ",
+									"name": "keyword.operator.array-marker.tjson"
+								}
+							]
+						},
+						"2": {
+							"patterns": [
+								{
+									"include": "#bracketed-values"
+								}
+							]
+						}
+					},
+					"patterns": [
+						{
+							"include": "#array-elements"
+						}
+					]
+				},
+				{
+					"comment": "Inline array, gap 2, first element a scalar: k:  1, 2, 3. Runs to end of line rather than stopping at '  ', because '  ' is the Type 3 element separator and stopping there would end the array at its own first separator. Nothing else can follow a packed array on the line: key-value packing takes only BASIC TYPES, and a nonempty array is not one.",
+					"begin": "(?<=:)(  |\\[ )((?:(?:true|false|null)\\b|-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b))",
+					"end": "$",
+					"name": "meta.array.inline.tjson",
+					"beginCaptures": {
+						"1": {
+							"patterns": [
+								{
+									"comment": "The gap is a two-column cell, so it may be a marker. Plain spaces get no scope, as they never did.",
+									"match": "\\[ ",
+									"name": "keyword.operator.array-marker.tjson"
+								}
+							]
+						},
 						"2": {
 							"patterns": [
 								{
@@ -494,10 +997,19 @@
 				},
 				{
 					"comment": "Inline array, gap 3, Type 3 packed bare strings: k:   a   b, and the single-element k:   a. Gap 3 means the first element is a bare string, and a bare string can only be Type 3 packed, so this is the only form the gap admits -- there is no Type 2 counterpart to tell it apart from. A Type 3 element may contain commas, so the element ends only at '  ' or end of line -- that is what makes 'k:   a, b   c' the two elements 'a, b' and 'c' rather than three.",
-					"begin": "(?<=:)(  )([ _])((?:[^\\p{Quotation_Mark}`/|, _\\[\\]{}❲❳⟦⟧⦋⦌【】〚〛［］❴❵｛｝](?:(?!  )[^\\n])*?[^\\p{Quotation_Mark}`|,\\s\\[\\]{}❲❳⟦⟧⦋⦌【】〚〛［］❴❵｛｝]|[^\\p{Quotation_Mark}`/|,\\s_\\[\\]{}❲❳⟦⟧⦋⦌【】〚〛［］❴❵｛｝])(?=  | *$))",
+					"begin": "(?<=:)(  |\\[ )([ _])((?:[^\\p{Quotation_Mark}`/|, _\\[\\]{}❲❳⟦⟧⦋⦌【】〚〛［］❴❵｛｝](?:(?!  )[^\\n])*?[^\\p{Quotation_Mark}`|,\\s\\[\\]{}❲❳⟦⟧⦋⦌【】〚〛［］❴❵｛｝]|[^\\p{Quotation_Mark}`/|,\\s_\\[\\]{}❲❳⟦⟧⦋⦌【】〚〛［］❴❵｛｝])(?=  | *$))",
 					"end": "$",
 					"name": "meta.array.inline.tjson",
 					"beginCaptures": {
+						"1": {
+							"patterns": [
+								{
+									"comment": "The gap is a two-column cell, so it may be a marker. Plain spaces get no scope, as they never did.",
+									"match": "\\[ ",
+									"name": "keyword.operator.array-marker.tjson"
+								}
+							]
+						},
 						"2": {
 							"name": "punctuation.definition.string.begin.bare.tjson"
 						},
@@ -513,13 +1025,28 @@
 				},
 				{
 					"comment": "Inline array, gap 2, first element quoted: Type 2 'k:  \"a,b\",  c' or Type 3 'k:  \"a\"  \"b\"'",
-					"begin": "(?<=:)(  )(?=\")",
+					"begin": "(?<=:)(  |\\[ )(?=\")",
 					"end": "$",
 					"name": "meta.array.inline.tjson",
 					"beginCaptures": {},
 					"patterns": [
 						{
 							"include": "#array-elements"
+						}
+					]
+				},
+				{
+					"comment": "Number value, gap 0, running to the end of the line, so it may be folded. Only a number is taken here: true, false and null cannot be folded, and the plain scalar rule below still has them.",
+					"begin": "(?<=:)((?:-?[0-9]+(?:\\.[0-9]*)?(?:[eE][+-]?[0-9]*)?|-))(?= *$)",
+					"end": "^(?!(?:  )*/ )",
+					"beginCaptures": {
+						"1": {
+							"name": "constant.numeric.tjson"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#fold-continuation-number"
 						}
 					]
 				},
@@ -537,6 +1064,25 @@
 					}
 				},
 				{
+					"comment": "Bare string value, gap 1, running to the end of the line -- so it may be folded, and this rule stays open over the continuation lines to say that their content is the same string. A bare string that stops at '  ' cannot be folded (the two spaces are already a separator) and is matched by the plain rule below.",
+					"begin": "(?<=:)([ _])((?:[^\\p{Quotation_Mark}`/|, _\\[\\]{}❲❳⟦⟧⦋⦌【】〚〛［］❴❵｛｝](?:(?!  )[^\\n])*?[^\\p{Quotation_Mark}`|,\\s\\[\\]{}❲❳⟦⟧⦋⦌【】〚〛［］❴❵｛｝]|[^\\p{Quotation_Mark}`/|,\\s_\\[\\]{}❲❳⟦⟧⦋⦌【】〚〛［］❴❵｛｝]))(?= *$)",
+					"end": "^(?!(?:  )*/ )",
+					"name": "meta.bare-string.tjson",
+					"beginCaptures": {
+						"1": {
+							"name": "punctuation.definition.string.begin.bare.tjson"
+						},
+						"2": {
+							"name": "string.unquoted.bare.tjson"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#fold-continuation-bare"
+						}
+					]
+				},
+				{
 					"comment": "Bare string value, gap 1: k: true. Group 1 is the one-sided opening quote; commas inside are content.",
 					"match": "(?<=:)([ _])((?:[^\\p{Quotation_Mark}`/|, _\\[\\]{}❲❳⟦⟧⦋⦌【】〚〛［］❴❵｛｝](?:(?!  )[^\\n])*?[^\\p{Quotation_Mark}`|,\\s\\[\\]{}❲❳⟦⟧⦋⦌【】〚〛［］❴❵｛｝]|[^\\p{Quotation_Mark}`/|,\\s_\\[\\]{}❲❳⟦⟧⦋⦌【】〚〛［］❴❵｛｝])(?=  | *$))",
 					"name": "meta.bare-string.tjson",
@@ -548,6 +1094,9 @@
 							"name": "string.unquoted.bare.tjson"
 						}
 					}
+				},
+				{
+					"include": "#fold-pending-value"
 				}
 			]
 		},
@@ -584,8 +1133,8 @@
 			]
 		},
 		"minimal-json": {
-			"comment": "MINIMAL JSON: a whole JSON value written with no whitespace outside its strings, embedded in a single TJSON line. It is the one place in the format where JSON punctuation is punctuation -- everywhere else a bracket is either a container marker or ordinary text inside a bare string -- so the interior is scoped as JSON rather than as TJSON. Every bracket carries the same scope, outermost and nested alike: the fragment is atomic to TJSON, which never reads inside it, so there is nothing a separate boundary scope would distinguish. 'end' accepts end of line as well as a closing bracket because MINIMAL JSON cannot be wrapped or folded -- a fragment that never closes is an error, and stopping at the line keeps that error from swallowing the rest of the document.",
-			"begin": "[\\[{]",
+			"comment": "MINIMAL JSON: a whole JSON value written with no whitespace outside its strings, embedded in a single TJSON line. The opening bracket must have a non-space behind it, and that lookahead is the whole of what separates this from a nesting marker: `[ ` is a cell, and MINIMAL JSON never puts whitespace outside a string so it never spells one. Without the guard `k:[ 1, 2` -- an array opened by a marker cell -- read as an embedded fragment, and `k:[  1, 2` came out as two numbers when its single element is the bare string '1, 2'. It is the one place in the format where JSON punctuation is punctuation -- everywhere else a bracket is either a container marker or ordinary text inside a bare string -- so the interior is scoped as JSON rather than as TJSON. Every bracket carries the same scope, outermost and nested alike: the fragment is atomic to TJSON, which never reads inside it, so there is nothing a separate boundary scope would distinguish. 'end' accepts end of line as well as a closing bracket because MINIMAL JSON cannot be wrapped or folded -- a fragment that never closes is an error, and stopping at the line keeps that error from swallowing the rest of the document.",
+			"begin": "[\\[{](?=\\S)",
 			"end": "[\\]}]|$",
 			"name": "meta.embedded.minimal-json.tjson",
 			"beginCaptures": {
@@ -660,39 +1209,6 @@
 				}
 			}
 		},
-		"multiline-strings": {
-			"comment": "Multiline string with no key — an array element. Same body and same matched-fence rule as the keyed forms.",
-			"begin": "^((?:  )*)((?:\\[ )*)( )(```|``|`)[ ]*$",
-			"end": "^([ ]*)( )(\\4)[ ]*$",
-			"name": "meta.multiline.tjson",
-			"beginCaptures": {
-				"1": {
-					"name": "punctuation.whitespace.indent.tjson"
-				},
-				"2": {
-					"name": "keyword.operator.array-marker.tjson"
-				},
-				"3": {
-					"name": "punctuation.definition.string.begin.tjson"
-				},
-				"4": {
-					"name": "punctuation.definition.string.begin.tjson"
-				}
-			},
-			"endCaptures": {
-				"2": {
-					"name": "punctuation.definition.string.end.tjson"
-				},
-				"3": {
-					"name": "punctuation.definition.string.end.tjson"
-				}
-			},
-			"patterns": [
-				{
-					"include": "#multiline-body"
-				}
-			]
-		},
 		"json-strings": {
 			"begin": "\"",
 			"end": "\"",
@@ -709,9 +1225,12 @@
 			},
 			"patterns": [
 				{
-					"comment": "Fold marker on a continuation line of a folded quoted string",
+					"comment": "Fold marker on a continuation line. The indent is named because the string's contentName covers this line too, and the leading spaces are not the string's data -- they are the indent the marker sits at the end of.",
 					"match": "^([ ]*)(/ )",
 					"captures": {
+						"1": {
+							"name": "punctuation.whitespace.indent.tjson"
+						},
 						"2": {
 							"name": "punctuation.definition.fold-marker.tjson"
 						}
@@ -727,11 +1246,28 @@
 				}
 			]
 		},
-		"multiline-body": {
-			"comment": "Body lines of a multiline string. Raw means raw: nothing here may be reinterpreted as TJSON. The only structure recognised is generator framing — the '| ' margin of the pipe-margin (``) form, and the '/ ' fold marker that replaces it on folded lines (tjson --fold-multiline). Both require their trailing space, which is what keeps '//' and '/usr/bin/env' as ordinary content.",
+		"multiline-margin-run": {
+			"comment": "The pipe margin of a bold multiline, from its first line to its last. The margin may sit at any even indent the generator picks, but having picked one it is fixed: the parser refuses a line whose '|' is anywhere else, because a margin is a straight edge to read down and stops being one as soon as the lines disagree. So the first line sets the column and `while` holds the rest to it. A folded line counts, since '/ ' replaces '| ' in the same two columns. The second branch catches a '|' at any other column and names its indent: without it the run simply ended and the offending line opened a run of its own, so a margin that wandered highlighted as though it were straight.",
+			"begin": "^([ ]*)(\\| ?)(.*)$",
+			"beginCaptures": {
+				"2": {
+					"name": "punctuation.definition.string.multiline-margin.tjson"
+				},
+				"3": {
+					"name": "markup.raw.block.tjson"
+				}
+			},
+			"while": "^(?=\\1(?:\\| |/ ))|^([ ]*)(\\| )",
+			"whileCaptures": {
+				"1": {
+					"name": "punctuation.whitespace.indent.tjson"
+				},
+				"2": {
+					"name": "invalid.illegal.multiline-margin-column.tjson"
+				}
+			},
 			"patterns": [
 				{
-					"comment": "Pipe-margin content line",
 					"match": "^([ ]*)(\\| ?)(.*)$",
 					"captures": {
 						"2": {
@@ -743,7 +1279,7 @@
 					}
 				},
 				{
-					"comment": "Folded content line — the marker's space is mandatory",
+					"comment": "Folded content line -- the marker's space is mandatory",
 					"match": "^([ ]*)(/ )(.*)$",
 					"captures": {
 						"2": {
@@ -755,57 +1291,280 @@
 					}
 				},
 				{
-					"comment": "Everything else is verbatim, including lines opening with // or /",
+					"match": "(.+)$",
+					"name": "markup.raw.block.tjson"
+				}
+			]
+		},
+		"multiline-bold": {
+			"comment": "A pipe-margin (``) multiline string. One rule per fence, because the three forms do not share a body: only the pipe-margin form has a margin, and a '| ' at the head of a line in either other form is ordinary text. One shared body rule painted it as a margin in all three -- a data character scoped as syntax. The fence is known only when the opening line matches, and a rule inside cannot ask which fence opened it, so the choice has to be made by which rule matched. The key is optional here rather than living in a rule of its own: a keyed and an unkeyed multiline differ only in what precedes the glyph.",
+			"begin": "^((?:  )*)(?=(\\[ )?(\\[ )?(\\[ )?(\\[ )?((?:\\[ )*))((?:\\[ )*)(\\{ )?(?:(\")((?:[^\"\\\\]|\\\\.)*)(\")(:)|([\\p{L}\\p{N}&&[^\\p{DI}\\x{2D0}]](?:(?:(?!  )[\\p{L}\\p{N}_()/'.!%&, ;@$#*=?^~<>+-&&[^\\p{DI}\\x{2D0}]])*?[\\p{L}\\p{N}_()/.!%&;@$#*=?^~<>+-&&[^\\p{DI}\\x{2D0}]])?)(:))?( )(``)(\\\\n|\\\\r\\\\n)?[ ]*$",
+			"end": "^\\1(?>\\2|  )(?>\\3|  )(?>\\4|  )(?>\\5|  )(?>\\8|  )(?>\\6|(?:  )*)( )(``)(\\17)[ ]*$",
+			"name": "meta.multiline.tjson",
+			"beginCaptures": {
+				"1": {
+					"name": "punctuation.whitespace.indent.tjson"
+				},
+				"7": {
+					"comment": "One token per marker, not one per chain. A marker is one cell of the indent and the cells are what the reader is counting, so a chain of three should be three spans and not one span three cells wide. It also removes a difference that had no reason to exist: a chain with nothing after it yet was already scoped a marker at a time by #marker-chain, so `[ [ ` re-tokenized the moment a value arrived on the line. Same scope either way, so nothing renders differently -- this is for whoever reads the spans.",
+					"patterns": [
+						{
+							"match": "\\[ ",
+							"name": "keyword.operator.array-marker.tjson"
+						}
+					]
+				},
+				"8": {
+					"name": "keyword.operator.object-marker.tjson"
+				},
+				"9": {
+					"name": "punctuation.definition.string.begin.tjson"
+				},
+				"10": {
+					"name": "entity.other.attribute-name.quoted.tjson"
+				},
+				"11": {
+					"name": "punctuation.definition.string.end.tjson"
+				},
+				"12": {
+					"name": "punctuation.separator.key-value.tjson"
+				},
+				"13": {
+					"name": "entity.other.attribute-name.bare.tjson"
+				},
+				"14": {
+					"name": "punctuation.separator.key-value.tjson"
+				},
+				"15": {
+					"name": "punctuation.definition.string.begin.tjson"
+				},
+				"16": {
+					"name": "punctuation.definition.string.begin.tjson"
+				},
+				"17": {
+					"name": "constant.character.escape.eol-indicator.tjson"
+				}
+			},
+			"endCaptures": {
+				"1": {
+					"name": "punctuation.definition.string.end.tjson"
+				},
+				"2": {
+					"name": "punctuation.definition.string.end.tjson"
+				},
+				"3": {
+					"name": "constant.character.escape.eol-indicator.tjson"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#multiline-body-bold"
+				}
+			]
+		},
+		"multiline-minimal": {
+			"comment": "A minimal (`) multiline string. One rule per fence, because the three forms do not share a body: only the pipe-margin form has a margin, and a '| ' at the head of a line in either other form is ordinary text. One shared body rule painted it as a margin in all three -- a data character scoped as syntax. The fence is known only when the opening line matches, and a rule inside cannot ask which fence opened it, so the choice has to be made by which rule matched. The key is optional here rather than living in a rule of its own: a keyed and an unkeyed multiline differ only in what precedes the glyph.",
+			"begin": "^((?:  )*)(?=(\\[ )?(\\[ )?(\\[ )?(\\[ )?((?:\\[ )*))((?:\\[ )*)(\\{ )?(?:(\")((?:[^\"\\\\]|\\\\.)*)(\")(:)|([\\p{L}\\p{N}&&[^\\p{DI}\\x{2D0}]](?:(?:(?!  )[\\p{L}\\p{N}_()/'.!%&, ;@$#*=?^~<>+-&&[^\\p{DI}\\x{2D0}]])*?[\\p{L}\\p{N}_()/.!%&;@$#*=?^~<>+-&&[^\\p{DI}\\x{2D0}]])?)(:))?( )(`)(\\\\n|\\\\r\\\\n)?[ ]*$",
+			"end": "^\\1(?>\\2|  )(?>\\3|  )(?>\\4|  )(?>\\5|  )(?>\\8|  )(?>\\6|(?:  )*)( )(`)(\\17)[ ]*$",
+			"name": "meta.multiline.tjson",
+			"beginCaptures": {
+				"1": {
+					"name": "punctuation.whitespace.indent.tjson"
+				},
+				"7": {
+					"comment": "One token per marker, not one per chain. A marker is one cell of the indent and the cells are what the reader is counting, so a chain of three should be three spans and not one span three cells wide. It also removes a difference that had no reason to exist: a chain with nothing after it yet was already scoped a marker at a time by #marker-chain, so `[ [ ` re-tokenized the moment a value arrived on the line. Same scope either way, so nothing renders differently -- this is for whoever reads the spans.",
+					"patterns": [
+						{
+							"match": "\\[ ",
+							"name": "keyword.operator.array-marker.tjson"
+						}
+					]
+				},
+				"8": {
+					"name": "keyword.operator.object-marker.tjson"
+				},
+				"9": {
+					"name": "punctuation.definition.string.begin.tjson"
+				},
+				"10": {
+					"name": "entity.other.attribute-name.quoted.tjson"
+				},
+				"11": {
+					"name": "punctuation.definition.string.end.tjson"
+				},
+				"12": {
+					"name": "punctuation.separator.key-value.tjson"
+				},
+				"13": {
+					"name": "entity.other.attribute-name.bare.tjson"
+				},
+				"14": {
+					"name": "punctuation.separator.key-value.tjson"
+				},
+				"15": {
+					"name": "punctuation.definition.string.begin.tjson"
+				},
+				"16": {
+					"name": "punctuation.definition.string.begin.tjson"
+				},
+				"17": {
+					"name": "constant.character.escape.eol-indicator.tjson"
+				}
+			},
+			"endCaptures": {
+				"1": {
+					"name": "punctuation.definition.string.end.tjson"
+				},
+				"2": {
+					"name": "punctuation.definition.string.end.tjson"
+				},
+				"3": {
+					"name": "constant.character.escape.eol-indicator.tjson"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#multiline-body-minimal"
+				}
+			]
+		},
+		"multiline-transparent": {
+			"comment": "A transparent (```) multiline string. One rule per fence, because the three forms do not share a body: only the pipe-margin form has a margin, and a '| ' at the head of a line in either other form is ordinary text. One shared body rule painted it as a margin in all three -- a data character scoped as syntax. The fence is known only when the opening line matches, and a rule inside cannot ask which fence opened it, so the choice has to be made by which rule matched. The key is optional here rather than living in a rule of its own: a keyed and an unkeyed multiline differ only in what precedes the glyph.",
+			"begin": "^((?:  )*)(?=(\\[ )?(\\[ )?(\\[ )?(\\[ )?((?:\\[ )*))((?:\\[ )*)(\\{ )?(?:(\")((?:[^\"\\\\]|\\\\.)*)(\")(:)|([\\p{L}\\p{N}&&[^\\p{DI}\\x{2D0}]](?:(?:(?!  )[\\p{L}\\p{N}_()/'.!%&, ;@$#*=?^~<>+-&&[^\\p{DI}\\x{2D0}]])*?[\\p{L}\\p{N}_()/.!%&;@$#*=?^~<>+-&&[^\\p{DI}\\x{2D0}]])?)(:))?( )(```)(\\\\n|\\\\r\\\\n)?[ ]*$",
+			"end": "^\\1(?>\\2|  )(?>\\3|  )(?>\\4|  )(?>\\5|  )(?>\\8|  )(?>\\6|(?:  )*)( )(```)(\\17)[ ]*$",
+			"name": "meta.multiline.tjson",
+			"beginCaptures": {
+				"1": {
+					"name": "punctuation.whitespace.indent.tjson"
+				},
+				"7": {
+					"comment": "One token per marker, not one per chain. A marker is one cell of the indent and the cells are what the reader is counting, so a chain of three should be three spans and not one span three cells wide. It also removes a difference that had no reason to exist: a chain with nothing after it yet was already scoped a marker at a time by #marker-chain, so `[ [ ` re-tokenized the moment a value arrived on the line. Same scope either way, so nothing renders differently -- this is for whoever reads the spans.",
+					"patterns": [
+						{
+							"match": "\\[ ",
+							"name": "keyword.operator.array-marker.tjson"
+						}
+					]
+				},
+				"8": {
+					"name": "keyword.operator.object-marker.tjson"
+				},
+				"9": {
+					"name": "punctuation.definition.string.begin.tjson"
+				},
+				"10": {
+					"name": "entity.other.attribute-name.quoted.tjson"
+				},
+				"11": {
+					"name": "punctuation.definition.string.end.tjson"
+				},
+				"12": {
+					"name": "punctuation.separator.key-value.tjson"
+				},
+				"13": {
+					"name": "entity.other.attribute-name.bare.tjson"
+				},
+				"14": {
+					"name": "punctuation.separator.key-value.tjson"
+				},
+				"15": {
+					"name": "punctuation.definition.string.begin.tjson"
+				},
+				"16": {
+					"name": "punctuation.definition.string.begin.tjson"
+				},
+				"17": {
+					"name": "constant.character.escape.eol-indicator.tjson"
+				}
+			},
+			"endCaptures": {
+				"1": {
+					"name": "punctuation.definition.string.end.tjson"
+				},
+				"2": {
+					"name": "punctuation.definition.string.end.tjson"
+				},
+				"3": {
+					"name": "constant.character.escape.eol-indicator.tjson"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#multiline-body-transparent"
+				}
+			]
+		},
+		"multiline-body-bold": {
+			"comment": "Body of a pipe-margin multiline: a margin run, folded lines, then raw text.",
+			"patterns": [
+				{
+					"include": "#multiline-margin-run"
+				},
+				{
+					"comment": "Folded content line -- the marker's space is mandatory",
+					"match": "^([ ]*)(/ )(.*)$",
+					"captures": {
+						"2": {
+							"name": "punctuation.definition.fold-marker.tjson"
+						},
+						"3": {
+							"name": "markup.raw.block.tjson"
+						}
+					}
+				},
+				{
 					"match": "^(.+)$",
 					"name": "markup.raw.block.tjson"
 				}
 			]
 		},
-		"object-entry-multiline-quoted": {
-			"comment": "Quoted key whose value is a multiline string. Any key the generator cannot emit bare arrives quoted, so this is as ordinary as the bare-key form.",
-			"begin": "^((?:  )*)((?:\\[ )*)(\\{ )?(\")((?:[^\"\\\\]|\\\\.)*)(\")(:)( )(```|``|`)$",
-			"end": "^([ ]*)( )(\\9)[ ]*$",
-			"name": "meta.object.entry.multiline.tjson",
+		"multiline-body-minimal": {
+			"comment": "Body of a minimal multiline. No margin -- the specification forbids a pipe margin in this form -- so a leading '| ' is content. Folding is allowed here, so the marker is still recognised. Unlike the other two forms this one has an indent: the body sits at the opening line's n+2 and those columns are structure, not data, so they must not be painted as string. The indent cannot be read from the fence rule -- a child rule cannot see its parent's captures -- but it does not have to be. The body's own first line establishes the column and `while` holds the rest of the body to it, which is the same shape the pipe margin and the table already use. The region ends by itself at the closing glyph, which sits two columns to the left and so fails the test.",
+			"patterns": [
+				{
+					"include": "#multiline-indent-run"
+				}
+			]
+		},
+		"multiline-indent-run": {
+			"comment": "The indent of a minimal multiline's body, from its first line to its last. `while` consumes the indent rather than looking ahead at it, so the content rules below start at the first data column on every line and the indent is named for what it is instead of being swept into the string. The first line fixes the column because nothing else can: n lives in the fence rule's captures and a child rule cannot reach them. That costs one thing, and it is worth being explicit about: if the very first line of the data itself begins with spaces, they are captured as though they were indent. The damage is small and self-correcting -- the next line is less indented, so the run ends and a new one opens at the right column, and only that first line's leading spaces are misnamed. Nothing is painted the wrong colour and the stack does not grow, since the pop happens before the next open (tests/mechanics.mjs walks 200 lines each stepping one column left and never exceeds depth 2). The specification allows that data; no fixture and no file in the external corpus contains it.",
+			"begin": "^([ ]+)(?=[^ ]|$)",
 			"beginCaptures": {
 				"1": {
 					"name": "punctuation.whitespace.indent.tjson"
-				},
-				"2": {
-					"name": "keyword.operator.array-marker.tjson"
-				},
-				"3": {
-					"name": "keyword.operator.object-marker.tjson"
-				},
-				"4": {
-					"name": "punctuation.definition.string.begin.tjson"
-				},
-				"5": {
-					"name": "entity.other.attribute-name.quoted.tjson"
-				},
-				"6": {
-					"name": "punctuation.definition.string.end.tjson"
-				},
-				"7": {
-					"name": "punctuation.separator.key-value.tjson"
-				},
-				"8": {
-					"name": "punctuation.definition.string.begin.tjson"
-				},
-				"9": {
-					"name": "punctuation.definition.string.begin.tjson"
 				}
 			},
-			"endCaptures": {
-				"2": {
-					"name": "punctuation.definition.string.end.tjson"
-				},
-				"3": {
-					"name": "punctuation.definition.string.end.tjson"
+			"while": "^(\\1)",
+			"whileCaptures": {
+				"1": {
+					"name": "punctuation.whitespace.indent.tjson"
 				}
 			},
 			"patterns": [
 				{
-					"include": "#multiline-body"
+					"comment": "Folded content line -- the marker's space is mandatory",
+					"match": "^(/ )(.*)$",
+					"captures": {
+						"1": {
+							"name": "punctuation.definition.fold-marker.tjson"
+						},
+						"2": {
+							"name": "markup.raw.block.tjson"
+						}
+					}
+				},
+				{
+					"match": "(.+)",
+					"name": "markup.raw.block.tjson"
+				}
+			]
+		},
+		"multiline-body-transparent": {
+			"comment": "Body of a transparent multiline. No margin and no folding at all, so every line is verbatim -- which is the whole point of the form: what you see is the document.",
+			"patterns": [
+				{
+					"match": "^(.+)$",
+					"name": "markup.raw.block.tjson"
 				}
 			]
 		},
@@ -829,6 +1588,22 @@
 		"array-elements": {
 			"comment": "Elements after the first in an inline array. Two packed forms reach here. In Type 2 the separator is ', ' and every element is a scalar or a quoted string. There is no bare element: a bare string may contain commas, and a content comma could not be told from a separator, so spec v0.5.0 admits none in a comma-packed array at all. A bare element belongs in Type 3. In Type 3 the separator is '  ' and every element is a string, so a bare one shows three spaces before it — two of separator and one of its own quote. The comma patterns come first, so at a ',' Type 2 always wins; the Type 3 patterns only see a gap that no comma introduced, which is exactly the spec's rule for telling the forms apart. Type 3 elements may contain commas, since a comma is not a separator in that form, so their content stops only at '  ' or end of line.",
 			"patterns": [
+				{
+					"comment": "Empty container element — separator, then a bracket pair. An empty array and an empty object are values like any other and may be packed, but they are not scalars and not strings, so neither of the patterns beside this one reaches them.",
+					"match": "(,)( )(\\[\\]|\\{\\})",
+					"captures": {
+						"1": {
+							"name": "punctuation.separator.array.tjson"
+						},
+						"3": {
+							"patterns": [
+								{
+									"include": "#bracketed-values"
+								}
+							]
+						}
+					}
+				},
 				{
 					"comment": "Scalar element — separator only, no quote space",
 					"match": "(,)( )((?:(?:true|false|null)\\b|-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b))",
@@ -881,7 +1656,7 @@
 			]
 		},
 		"inline-entries-quoted": {
-			"comment": "Continuation entry on the same line whose key is quoted. Without this the key is indistinguishable from a string value: #json-strings would match it at the quote, and the gap before it would go unclaimed.",
+			"comment": "Continuation entry on the same line whose key is quoted. Without this the key is indistinguishable from a string value: #json-strings would match it at the quote, and the gap before it would go unclaimed. A folded value inside one of these is carried by the enclosing entry, whose 'while' governs when the fold ends, so this rule still ends on its own line.",
 			"begin": "((?:  )+)(\")((?:[^\"\\\\]|\\\\.)*)(\")(:)",
 			"end": "(?=  |$)",
 			"name": "meta.object.entry.inline.tjson",
@@ -909,47 +1684,190 @@
 			]
 		},
 		"folded-keys": {
-			"comment": "Folded key: a key long enough to run out of line before its colon continues on '/ ' lines, and the colon lands there. Begin matches an even-indented identifier line with no colon on it. This runs after #scalar-values on purpose: a packed array line like '  1, 2.5, -3' is also even-indented with no colon, and the key character class contains ',', '.', '-' and space, so the two shapes are not separable by a pattern alone -- letting the array rules refuse the line first is what tells them apart. The lookaheads then cover a lone scalar, which no array rule claims. Everything else at an even column is already distinguishable: a bare string value carries its one-sided opening quote and so sits at an odd column, a finished key has its colon, comments open '//', table rows '|', fold continuations '/', fences a backtick. End is the colon wherever it finally appears, and it takes the rest of that line with it so the value is scoped by the ordinary value rules.",
-			"begin": "^((?:  )*)(?!(?:true|false|null)\\b[ ]*$)(?!-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?[ ]*$)([\\p{L}\\p{N}][\\p{L}\\p{N}_()/'.!%&, -]*)$",
-			"end": "(:)(.*)$",
+			"comment": "Folded key: a key long enough to run out of line before its colon, which continues on '/ ' lines and lands on one of them. Begin matches an even-indented identifier line with no colon on it. This runs after #scalar-values on purpose: a packed array line like '  1, 2.5, -3' is also even-indented with no colon, and the key character class contains ',', '.', '-' and space, so the two shapes are not separable by a pattern alone -- letting the array rules refuse the line first is what tells them apart. The lookaheads then cover a lone scalar, which no array rule claims. Everything else at an even column is already distinguishable: a bare string value carries its one-sided opening quote and so sits at an odd column, a finished key has its colon, comments open '//', table rows '|', fold continuations '/', fences a backtick. The rule runs to the first line that is not a continuation rather than stopping at the colon, because the specification folds a key and a following basic value as one unit -- the value may itself fold, and it may not even have started when the colon ends its line. This is a 'while' rule rather than begin/end because the value it holds can push rules of its own, and a parent's 'end' is never consulted while a child is on the stack -- so the column check would be masked by the very value it is checking. 'while' is tested against the whole stack on every line, so it holds however deep the value goes. See #fold-markers for the column rule itself. It carries the marker prefix like every other line rule, which it did not until 2026-09-02: its begin started at the indent and stopped there, so a folded bare key behind ANY marker chain -- one cell was enough -- matched nothing at all and the whole line came out with no scope. No fixture reached it, because a key long enough to fold and a marker in front of it had never appeared in the same document. Wrapping every source in six arrays and regenerating is what found it. Rule 4 -- a bare key may not END with a space, a comma or an apostrophe -- is NOT applied here, and that is deliberate: this rule matches a FRAGMENT of a key, the piece that fits on one line, and the character it stops at is interior to the whole key rather than its last. The generator writes such fragments freely; a key ending in a space is only illegal once the colon is reached, which is a line or more further down. Rule 5, no two consecutive spaces, is interior and does still apply.",
+			"begin": "^((?:  )*)(?=(\\[ )?(\\[ )?(\\[ )?(\\[ )?((?:\\[ )*))((?:\\[ )*)(\\{ )?(?!(?:true|false|null)\\b[ ]*$)(?!-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?[ ]*$)([\\p{L}\\p{N}&&[^\\p{DI}\\x{2D0}]](?:(?!  )[\\p{L}\\p{N}_()/'.!%&, ;@$#*=?^~<>+-&&[^\\p{DI}\\x{2D0}]])*)$",
+			"while": "^(?=\\1(?>\\2|  )(?>\\3|  )(?>\\4|  )(?>\\5|  )(?>\\8|  )(?>\\6|(?:  )*)/ )",
 			"name": "meta.object.entry.folded-key.tjson",
 			"beginCaptures": {
 				"1": {
 					"name": "punctuation.whitespace.indent.tjson"
 				},
-				"2": {
-					"name": "entity.other.attribute-name.bare.tjson"
-				}
-			},
-			"endCaptures": {
-				"1": {
-					"name": "punctuation.separator.key-value.tjson"
-				},
-				"2": {
+				"7": {
 					"patterns": [
 						{
-							"include": "#inline-value"
+							"match": "\\[ ",
+							"name": "keyword.operator.array-marker.tjson"
 						}
 					]
+				},
+				"8": {
+					"name": "keyword.operator.object-marker.tjson"
+				},
+				"9": {
+					"name": "entity.other.attribute-name.bare.tjson"
 				}
 			},
 			"patterns": [
 				{
-					"comment": "Fold marker introducing the next piece of the key",
-					"match": "^((?:  )*)(/ )( ?)",
+					"include": "#fold-continuation-key"
+				},
+				{
+					"comment": "The colon, wherever on the continuation lines it finally lands. What follows is a value, and the ordinary value rules read it -- including, when the colon ends the line, the one that carries the value onto the line below.",
+					"match": "(:)",
 					"captures": {
 						"1": {
-							"name": "punctuation.whitespace.indent.tjson"
-						},
-						"2": {
-							"name": "punctuation.definition.fold-marker.tjson"
+							"name": "punctuation.separator.key-value.tjson"
 						}
 					}
 				},
 				{
-					"comment": "The continuing key text",
-					"match": "[^:\\n]+",
-					"name": "entity.other.attribute-name.bare.tjson"
+					"include": "#inline-value"
+				}
+			]
+		},
+		"document-body": {
+			"comment": "Every construct a line can be, in the order they must be tried. Named rather than written inline at the top level so that a rule which needs to read a region of the document the way the document reads it can include the list instead of copying it. The list itself is #document-constructs; this entry wraps it in #object-column, the region that remembers a proved object's column.",
+			"patterns": [
+				{
+					"include": "#object-column"
+				},
+				{
+					"include": "#document-constructs"
+				}
+			]
+		},
+		"sibling-folded-key": {
+			"comment": "A folded quoted string at a column a sibling already proved holds keys.",
+			"begin": "^((?:  )*)(?=\"(?:[^\"\\\\]|\\\\.)*$)",
+			"while": "^(?=\\1/ )",
+			"name": "meta.object.entry.folded-key.tjson",
+			"patterns": [
+				{
+					"include": "#json-quoted-key"
+				},
+				{
+					"comment": "The colon, and everything after it. Same fence as #folded-quoted-key, for the same reason: #json-quoted-key above is a '\"'...'\"' region and would match the VALUE's quotes as readily as the key's, so `k\":\"long\"` came out with `long` coloured as a key. It uses `while` and not `end`. An `end` is masked while a child region is open, and a value legitimately opens one that outlives its line -- a bare string keeps its region open so it can pick up a fold continuation below -- so `end: $` never fired and this region ate the following line. `while` is tested at the start of each later line instead: a fold continuation keeps it open, and anything else pops it before that line is scoped at all.",
+					"begin": "(?<=\")(:)",
+					"beginCaptures": {
+						"1": {
+							"name": "punctuation.separator.key-value.tjson"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#inline-value"
+						},
+						{
+							"include": "#fold-marker"
+						}
+					],
+					"while": "^(?=[ ]*/ )"
+				},
+				{
+					"include": "#inline-value"
+				},
+				{
+					"include": "#fold-marker"
+				}
+			]
+		},
+		"document-constructs": {
+			"comment": "Every construct a line can be, in the order they must be tried. Split out of #document-body so #object-column can include the constructs without including itself: it opens on a zero-width lookahead, so reaching itself would open the same region again on the same line without end.",
+			"patterns": [
+				{
+					"include": "#comments"
+				},
+				{
+					"include": "#indent-glyph-frame"
+				},
+				{
+					"include": "#indent-glyphs"
+				},
+				{
+					"include": "#marker-chain"
+				},
+				{
+					"include": "#fold-markers"
+				},
+				{
+					"include": "#table-rows"
+				},
+				{
+					"include": "#multiline-minimal"
+				},
+				{
+					"include": "#multiline-bold"
+				},
+				{
+					"include": "#multiline-transparent"
+				},
+				{
+					"include": "#object-entries-quoted"
+				},
+				{
+					"include": "#folded-quoted-key"
+				},
+				{
+					"include": "#folded-quoted"
+				},
+				{
+					"include": "#object-entries"
+				},
+				{
+					"include": "#scalar-values"
+				},
+				{
+					"include": "#folded-keys"
+				}
+			]
+		},
+		"object-column": {
+			"comment": "An object, from the first key that proves it to the last line at that column or deeper. It carries one fact and adds no tokens of its own: at this column a folded quoted string is a KEY, because a sibling above it already had a colon. Without it every folded key in an unmarked object reads as a string, and unmarked is the normal case -- a root object does not print its opening `{`, so the marker #folded-quoted-key keys off is the rarer shape. The `begin` is entirely a lookahead, so the region consumes nothing and its own line is scoped by the ordinary rules through #document-body below. That is what lets the entry rules stay exactly as they were: a region that ate the indent would put every one of them out of reach, since `^` matches only at a true line start (tests/mechanics.mjs). A zero-width begin CAN open a region, as long as its patterns can scope the line it opened on (tests/mechanics.mjs). It ends with `end` and not `while` because `while` is tested against the whole stack every line: a bold multiline's margin floats to column zero, and a `while` there would pop this region and tear the multiline open with it. Two things end it: a line shallower than its column, and a line AT its column that opens with a marker cell -- which section 1 says ends whatever was at that level. That second branch is why no shadow rule is needed for markers: a marker at this column is the end of this object, not a nested one to hide behind. It spans its object including the containers nested inside it, which #nested-block hides so that a folded string down there is not read as a key at this column. The recursion that costs -- the shadow opens on the same line this region did, since a key whose colon ends the line opens both, and the shadow's patterns reach a region again -- is broken by #object-column-nested, which is this rule with one extra condition: it only opens on a key that has a VALUE on its line. A line whose colon ends it opens a shadow instead, so the two can never open each other on the same line and the nesting is unbounded rather than a chain of fixed length. The column test is written twice, and both readings have to fail before the region ends. The slots are ordered with the overflow LAST, because on a continuation line every cell is spaces and a greedy overflow ahead of the object-marker slot would eat its two columns. But this rule is the only one whose test also has to match a line that still HAS its markers -- its own opening line -- and there the overflow markers come before the `{ ` in the text, not after. With one ordering only, a chain deeper than the fixed slots made the end fire on the opening line: the region closed at once and the whole line came out with no scope at all, from five markers up.",
+			"begin": "^(?=((?:  )*)(\\[ )?(\\[ )?(\\[ )?(\\[ )?((?:\\[ )*)(\\{ )?(?:[\\p{L}\\p{N}&&[^\\p{DI}\\x{2D0}]](?:(?:(?!  )[\\p{L}\\p{N}_()/'.!%&, ;@$#*=?^~<>+-&&[^\\p{DI}\\x{2D0}]])*?[\\p{L}\\p{N}_()/.!%&;@$#*=?^~<>+-&&[^\\p{DI}\\x{2D0}]])?|\"(?:[^\"\\\\]|\\\\.)*\"):)",
+			"end": "^(?!\\1(?>\\2|  )(?>\\3|  )(?>\\4|  )(?>\\5|  )(?>\\7|  )(?>\\6|(?:  )*))(?!\\1(?>\\2|  )(?>\\3|  )(?>\\4|  )(?>\\5|  )(?>\\6|(?:  )*)(?>\\7|  ))|^(?=\\1(?>\\2|  )(?>\\3|  )(?>\\4|  )(?>\\5|  )(?>\\7|  )(?>\\6|(?:  )*)(?:\\[ |\\{ ))|^(?=[ ]*/>[ ]*$)",
+			"patterns": [
+				{
+					"include": "#nested-block"
+				},
+				{
+					"include": "#sibling-folded-key"
+				},
+				{
+					"include": "#document-constructs"
+				}
+			]
+		},
+		"nested-block": {
+			"comment": "The block below a key whose colon ends its line: that block is the key's value, a container of its own, and while it is open the column remembered above it must not reach into it. The opener establishes its OWN column from its own line, which is what makes this possible at all -- a child rule cannot see its parent's captures. It is a pure lookahead so the opening line keeps its ordinary scoping, and it uses `end` rather than `while` so a multiline opened inside is not torn apart when its margin floats left of this block. Its `end` carries a second lookahead for a reason worth remembering: unlike `while`, an `end` is tested on the rule's own opening line, and that line is at this block's column rather than deeper -- so the plain not-deeper test matched at once and closed the block before it held anything. One more branch ends it: a line that is nothing but a closing indent glyph. An `end` is masked while a child region is open, which is exactly what lets this one survive a multiline -- and it cuts the other way too, because a region still open here would mask the enclosing frame's own end and the frame would swallow the rest of the document. A `/>` closes the frame around it, so everything inside has to close with it.",
+			"patterns": [
+				{
+					"comment": "A key whose colon ends the line; its value is the block below.",
+					"begin": "^(?=((?:  )*)[^ ].*:[ ]*$)",
+					"end": "^(?!\\1  )(?!\\1(?:[^ ].*)?:[ ]*$)|^(?=[ ]*/>[ ]*$)",
+					"patterns": [
+						{
+							"include": "#object-column-nested"
+						},
+						{
+							"include": "#document-constructs"
+						}
+					]
+				}
+			]
+		},
+		"object-column-nested": {
+			"comment": "#object-column as it is reached from inside a nested block, with one extra condition on its begin: the proving key must have a value on its own line. That is what stops a key whose colon ends the line from opening this region AND the shadow below it on the same line, each reaching the other without end. Such a line opens the shadow only; the object it introduces is proved instead by the first of its keys that carries a value, which is what an object of scalars is made of. The guard spells out the newline: the engine is handed the line with its terminator still attached, and a class as loose as [^ :] matches that newline, so the guard passed on every line and the recursion came straight back. The column test is written twice, and both readings have to fail before the region ends. The slots are ordered with the overflow LAST, because on a continuation line every cell is spaces and a greedy overflow ahead of the object-marker slot would eat its two columns. But this rule is the only one whose test also has to match a line that still HAS its markers -- its own opening line -- and there the overflow markers come before the `{ ` in the text, not after. With one ordering only, a chain deeper than the fixed slots made the end fire on the opening line: the region closed at once and the whole line came out with no scope at all, from five markers up.",
+			"begin": "^(?=((?:  )*)(\\[ )?(\\[ )?(\\[ )?(\\[ )?((?:\\[ )*)(\\{ )?(?:[\\p{L}\\p{N}&&[^\\p{DI}\\x{2D0}]](?:(?:(?!  )[\\p{L}\\p{N}_()/'.!%&, ;@$#*=?^~<>+-&&[^\\p{DI}\\x{2D0}]])*?[\\p{L}\\p{N}_()/.!%&;@$#*=?^~<>+-&&[^\\p{DI}\\x{2D0}]])?|\"(?:[^\"\\\\]|\\\\.)*\"):)(?=.*[^ :\\r\\n][ ]*$)",
+			"end": "^(?!\\1(?>\\2|  )(?>\\3|  )(?>\\4|  )(?>\\5|  )(?>\\7|  )(?>\\6|(?:  )*))(?!\\1(?>\\2|  )(?>\\3|  )(?>\\4|  )(?>\\5|  )(?>\\6|(?:  )*)(?>\\7|  ))|^(?=\\1(?>\\2|  )(?>\\3|  )(?>\\4|  )(?>\\5|  )(?>\\7|  )(?>\\6|(?:  )*)(?:\\[ |\\{ ))|^(?=[ ]*/>[ ]*$)",
+			"patterns": [
+				{
+					"include": "#nested-block"
+				},
+				{
+					"include": "#sibling-folded-key"
+				},
+				{
+					"include": "#document-constructs"
 				}
 			]
 		}

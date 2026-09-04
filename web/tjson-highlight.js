@@ -23,9 +23,12 @@ let engine = null;
 
 const isScope = (scope, prefix) => scope === prefix || scope.startsWith(prefix + ".");
 
+// Unstyled scopes stop the walk (return null), they are not skipped.
+// Continuing past them would colour fold-indent with the folded string's colour
+// (tjson-highlight 0.3.0 / docs/web-highlighting.md).
 function classFor(scopes, map) {
   for (let i = scopes.length - 1; i >= 0; i--) {
-    if (map.unstyled.some((p) => isScope(scopes[i], p))) continue;
+    if (map.unstyled.some((p) => isScope(scopes[i], p))) return null;
     for (const [prefix, cls] of map.classes) {
       if (isScope(scopes[i], prefix)) return cls;
     }

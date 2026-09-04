@@ -11,8 +11,19 @@
     "three places -- .begin.bare must beat .definition.string, .multiline-margin",
     "must beat .definition.string, and .separator.table must beat .separator.",
     "",
+    "`invalid` lands on the character that is in the wrong place, never on the",
+    "whitespace in front of it -- themes style `invalid` as a foreground colour",
+    "and an italic and never as a background, so on whitespace it renders as",
+    "nothing. YAML's `invalid.illegal.expected-indentation` follows the same",
+    "rule: the fault goes on the `-`, `?` or `|`, and the spaces beside it stay",
+    "ordinary indentation.",
+    "",
     "Walk a token's scopes from innermost to outermost and take the first hit;",
-    "the innermost scope is the most specific thing known about that text."
+    "the innermost scope is the most specific thing known about that text. A",
+    "scope listed under `unstyled` ends the walk instead of being skipped: it",
+    "says the text is deliberately not coloured, and reaching past it would",
+    "paint the indent in front of a fold marker with the colour of the string",
+    "that fold is continuing."
   ],
 
   "classes": [
@@ -35,7 +46,8 @@
     ["string.quoted.double", "tjson-string"],
     ["string.unquoted", "tjson-bare"],
     ["markup.raw.block", "tjson-multiline"],
-    ["comment", "tjson-comment"]
+    ["comment", "tjson-comment"],
+    ["invalid", "tjson-invalid"]
   ],
 
   "unstyled": {
