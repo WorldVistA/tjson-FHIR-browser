@@ -39,13 +39,18 @@ jobs:
           cp README.md LICENSE AGENTS.md _site/ 2>/dev/null || true
           # Rewrite module path for root deploy: ../vendor → ./vendor, ../examples → ./examples
           sed -i 's|../vendor/tjson/|./vendor/tjson/|g' _site/app.js
+          sed -i 's|../vendor/tjson-highlight/|./vendor/tjson-highlight/|g' _site/tjson-highlight.js
           sed -i 's|../examples/|./examples/|g' _site/app.js
           sed -i 's|href="../docs/|href="./docs/|g' _site/index.html
           sed -i 's|href="../README.md"|href="./README.md"|g' _site/index.html
           # Smoke-ish: required files present
           test -f _site/index.html
           test -f _site/vendor/tjson/web/index.js
+          test -f _site/vendor/tjson-highlight/tjson.tmLanguage.json
+          test -f _site/vendor/tjson-highlight/onig.wasm
+          test -f _site/tjson-highlight.js
           test -f _site/examples/sample-bundle.json
+          grep -q './vendor/tjson-highlight/' _site/tjson-highlight.js
 
       - uses: actions/upload-pages-artifact@v3
         with:
