@@ -106,13 +106,24 @@ echo "==> smoke https://cds1.vistaplex.org/browse/"
 for path in \
   "/browse/" \
   "/browse/app.js" \
+  "/browse/tjson-highlight.js" \
   "/browse/vendor/tjson/web/index.js" \
+  "/browse/vendor/tjson-highlight/tjson.tmLanguage.json" \
+  "/browse/vendor/tjson-highlight/onig.wasm" \
   "/browse/examples/sample-bundle.json"
 do
   code=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 20 "https://cds1.vistaplex.org$path" || echo 000)
   echo "  $code  $path"
   [[ "$code" == "200" ]] || { echo "FAIL: $path → $code" >&2; exit 1; }
 done
-# Confirm Pages-style relative vendor path on deployed app.js
-curl -sS --max-time 20 "https://cds1.vistaplex.org/browse/app.js" | grep -q './vendor/tjson/web/index.js'
+# Confirm Pages-style relative vendor paths on the deployed JS
+# (write to a file; curl|grep -q can SIGPIPE under pipefail)
+APPJS="$(mktemp)"
+HLJS="$(mktemp)"
+curl -sS --max-time 20 "https://cds1.vistaplex.org/browse/app.js" -o "$APPJS"
+curl -sS --max-time 20 "https://cds1.vistaplex.org/browse/tjson-highlight.js" -o "$HLJS"
+grep -q './vendor/tjson/web/index.js' "$APPJS"
+grep -q 'tjson-highlight.js' "$APPJS"
+grep -q './vendor/tjson-highlight/' "$HLJS"
+rm -f "$APPJS" "$HLJS"
 echo "DEPLOY OK: https://cds1.vistaplex.org/browse/?example=1"

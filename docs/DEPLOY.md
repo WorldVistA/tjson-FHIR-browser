@@ -36,13 +36,14 @@ If your Caddyfile or compose layout differs, do the first-time Caddy wiring by h
    - copies `web/*` to the site root
    - copies `vendor/`, `examples/`, `docs/`, plus README/LICENSE/AGENTS
    - rewrites `../vendor` → `./vendor` and `../examples` → `./examples` in `app.js`
+   - rewrites `../vendor/tjson-highlight/` → `./vendor/tjson-highlight/` in `tjson-highlight.js`
    - rewrites doc links in `index.html` to `./docs/…`
 2. **rsync** that tree to `/opt/tjson-FHIR-browser/site` on the host (`--delete`).
 3. **Idempotent Caddy wiring** (first run only):
    - insert `/browse` → `/browse/` redirect and `handle_path /browse/*` → `file_server` under `/srv/browse`
    - bind-mount the site dir into the `caddy` service as `/srv/browse:ro`
    - `docker compose up -d caddy` and `caddy reload`
-4. **Smoke** HTTPS paths on `https://cds1.vistaplex.org/browse/…` (index, `app.js`, vendored tjson, example Bundle).
+4. **Smoke** HTTPS paths on `https://cds1.vistaplex.org/browse/…` (index, `app.js`, `tjson-highlight.js`, vendored tjson + highlight grammar/wasm, example Bundle).
 
 Local `web/` keeps `../vendor` paths for `./scripts/serve.sh`. Only the assembled deploy tree uses `./vendor`.
 
