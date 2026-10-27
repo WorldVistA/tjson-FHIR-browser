@@ -50,9 +50,15 @@ import sys
 path = Path(sys.argv[1])
 text = path.read_text()
 block = """
-    # tjson FHIR Browser (static)
+    # tjson FHIR Browser. /browse/?url= is path /browse/ plus a query,
+    # which does not match /browse/*.
     handle /browse {
         redir * /browse/ permanent
+    }
+    handle /browse/ {
+        root * /srv/browse
+        rewrite * /index.html
+        file_server
     }
     handle_path /browse/* {
         root * /srv/browse
